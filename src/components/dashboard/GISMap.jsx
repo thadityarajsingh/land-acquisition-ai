@@ -8,15 +8,17 @@ const STATE_CENTERS = {
   'West Bengal': [23.0, 87.8],
 };
 
-function syntheticCoordinates(project) {
-  if (Number.isFinite(Number(project.latitude)) && Number.isFinite(Number(project.longitude))) {
-    return [Number(project.latitude), Number(project.longitude)];
-  }
+// The prototype map uses deterministic state/district placement only.
+// It does not read, display, or depend on latitude/longitude dataset fields.
+function projectMapPosition(project) {
   const center = STATE_CENTERS[project.state] || [22.5, 78.9];
   const text = `${project.state ?? ''}:${project.district ?? ''}`;
   let hash = 0;
   for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) | 0;
-  return [center[0] + ((hash % 80) - 40) / 100, center[1] + ((((hash / 80) | 0) % 80) - 40) / 100];
+  return [
+    center[0] + ((hash % 80) - 40) / 100,
+    center[1] + ((((hash / 80) | 0) % 80) - 40) / 100,
+  ];
 }
 
 function riskColor(risk) {
@@ -60,7 +62,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     markersRef.current = [];
 
     projects.forEach(project => {
-      const [lat, lng] = syntheticCoordinates(project);
+      const [mapLat, mapLng] = projectMapPosition(project);
       const id = project.project_id ?? project.id;
       const rawRisk = Number(project.risk_score ?? project.riskScore ?? 0);
       let risk = rawRisk <= 1 ? rawRisk * 100 : rawRisk;
@@ -69,7 +71,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       const category = risk >= 70 ? 'High' : risk >= 40 ? 'Medium' : 'Low';
       const color = riskColor(risk);
 
-      const marker = window.L.circleMarker([lat, lng], {
+      const marker = window.L.circleMarker([mapLat, mapLng], {
         radius: isSelected ? 10 : 7, color, fillColor: color, fillOpacity: 0.8, weight: 2,
       }).addTo(map);
 
@@ -83,8 +85,8 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
 
     const selected = projects.find(project => (project.project_id ?? project.id) === selectedProjectId);
     if (selected) {
-      const [lat, lng] = syntheticCoordinates(selected);
-      map.setView([lat, lng], Math.max(map.getZoom(), 9));
+      const [mapLat, mapLng] = projectMapPosition(selected);
+      map.setView([mapLat, mapLng], Math.max(map.getZoom(), 9));
     }
   }, [projects, selectedProjectId, selectedRisk, baselineRisk, onSelectProject]);
 
@@ -95,7 +97,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <div>
           <div className="flex items-center gap-2 font-bold text-slate-900"><MapPin className="h-4 w-4 text-blue-600" />Project GIS Map</div>
-          <p className="mt-0.5 text-[11px] text-slate-500">OpenStreetMap • synthetic/demo coordinates until official GIS data is available</p>
+          <p className="mt-0.5 text-[11px] text-slate-500">OpenStreetMap • demo project placement based on state and district</p>
         </div>
         {hasSimulation && <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">What-If active</span>}
       </div>
