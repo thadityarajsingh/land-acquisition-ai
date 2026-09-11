@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from backend.routes.prediction import router as prediction_router
+from backend.routes.what_if import router as what_if_router
 
 app = FastAPI(
     title="Land Acquisition AI",
@@ -20,4 +21,4 @@ def health():
 
 
 app.include_router(prediction_router)
-
+app.include_router(what_if_router)
