@@ -1,8 +1,6 @@
 """
 preprocess.py
 Data cleaning + preprocessing pipeline for SIH26017.
-Schema below was filled in AFTER inspecting the real synthetic dataset
-(1200 rows, 20 columns) — not assumed in advance.
 """
 
 import pandas as pd
@@ -53,11 +51,14 @@ def inspect(df: pd.DataFrame) -> None:
 
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.drop_duplicates()
+    df = df.drop_duplicates().copy()
     df = df.drop(columns=[c for c in DROP_COLUMNS if c in df.columns and c != TARGET_COLUMN])
     df = df.dropna(subset=[TARGET_COLUMN])
+
+    # Strip whitespace without converting NaN/None into the string "nan".
     for col in df.select_dtypes(include="object").columns:
-        df[col] = df[col].astype(str).str.strip()
+        df[col] = df[col].apply(lambda value: value.strip() if isinstance(value, str) else value)
+
     return df
 
 
