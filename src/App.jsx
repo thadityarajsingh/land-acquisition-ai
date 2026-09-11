@@ -7,6 +7,7 @@ import { LoginPage } from "./components/auth/LoginPage";
 import { useProjects } from "./hooks/useProjects";
 import { usePredict } from "./hooks/usePredict";
 import { useWhatIf } from "./hooks/useWhatIf";
+import { useRecommendations } from "./hooks/useRecommendations";
 import { PanelLeft } from "lucide-react";
 
 export function App() {
@@ -46,6 +47,11 @@ export function App() {
   } = usePredict(projectData);
 
   const {
+    recommendations,
+    loading: recommendationsLoading,
+  } = useRecommendations(selectedProjectId);
+
+  const {
     whatIfResult,
     simulating,
     runSimulation,
@@ -78,7 +84,7 @@ export function App() {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  const isLoading = projectsLoading || predictionLoading;
+  const isLoading = projectsLoading || predictionLoading || recommendationsLoading;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans relative">
@@ -138,6 +144,7 @@ export function App() {
                 setActiveTab={setActiveTab}
                 projectData={projectData}
                 prediction={prediction}
+                recommendations={recommendations}
                 whatIfResult={whatIfResult}
                 onRunSimulation={runSimulation}
                 simulating={simulating}
