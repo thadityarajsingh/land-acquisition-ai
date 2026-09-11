@@ -8,11 +8,14 @@ export async function predictRisk(payload) {
   } catch (error) {
     console.warn('[BhoomiIQ API] Fallback to mock prediction:', error.message);
     return {
-      riskScore: MOCK_PROJECT_DATA.riskScore,
-      riskCategory: MOCK_PROJECT_DATA.riskCategory,
-      estimatedDelay: MOCK_PROJECT_DATA.estimatedDelay,
-      confidenceScore: MOCK_PROJECT_DATA.confidenceScore,
-      drivers: MOCK_PROJECT_DATA.drivers,
+      risk_score: MOCK_PROJECT_DATA.riskScore / 100,
+      risk_category: MOCK_PROJECT_DATA.riskCategory,
+      predicted_delayed: true,
     };
   }
+}
+
+export async function explainRisk(payload) {
+  const response = await apiClient.post('/predict/explain', payload);
+  return response.data;
 }
