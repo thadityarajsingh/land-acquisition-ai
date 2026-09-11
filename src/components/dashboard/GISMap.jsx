@@ -12,17 +12,18 @@ function syntheticCoordinates(project) {
   if (Number.isFinite(Number(project.latitude)) && Number.isFinite(Number(project.longitude))) {
     return [Number(project.latitude), Number(project.longitude)];
   }
-
   const center = STATE_CENTERS[project.state] || [22.5, 78.9];
   const text = `${project.state ?? ''}:${project.district ?? ''}`;
   let hash = 0;
   for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) | 0;
-  const offsetLat = ((hash % 80) - 40) / 100;
-  const offsetLng = ((((hash / 80) | 0) % 80) - 40) / 100;
-  return [center[0] + offsetLat, center[1] + offsetLng];
+  return [center[0] + ((hash % 80) - 40) / 100, center[1] + ((((hash / 80) | 0) % 80) - 40) / 100];
 }
 
-export function GISMap({ projects = [], selectedProjectId, onSelectProject }) {
+function riskColor(risk) {
+  return risk >= 70 ? '#dc2626' : risk >= 40 ? '#d97706' : '#059669';
+}
+
+export function GISMap({ projects = [], selectedProjectId, onSelectProject, selectedRisk, baselineRisk }) {
   const mapRef = useRef(null);
   const instanceRef = useRef(null);
   const markersRef = useRef([]);
@@ -48,10 +49,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject }) {
     };
     loadLeaflet().catch(() => {});
     return () => {
-      if (instanceRef.current) {
-        instanceRef.current.remove();
-        instanceRef.current = null;
-      }
+      if (instanceRef.current) { instanceRef.current.remove(); instanceRef.current = null; }
     };
   }, []);
 
@@ -63,15 +61,22 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject }) {
 
     projects.forEach(project => {
       const [lat, lng] = syntheticCoordinates(project);
-      const rawRisk = Number(project.risk_score ?? project.riskScore ?? 0);
-      const risk = rawRisk <= 1 ? rawRisk * 100 : rawRisk;
-      const category = risk >= 70 ? 'High' : risk >= 40 ? 'Medium' : 'Low';
-      const color = category === 'High' ? '#dc2626' : category === 'Medium' ? '#d97706' : '#059669';
       const id = project.project_id ?? project.id;
+      const rawRisk = Number(project.risk_score ?? project.riskScore ?? 0);
+      let risk = rawRisk <= 1 ? rawRisk * 100 : rawRisk;
+      const isSelected = id === selectedProjectId;
+      if (isSelected && Number.isFinite(Number(selectedRisk))) risk = Number(selectedRisk);
+      const category = risk >= 70 ? 'High' : risk >= 40 ? 'Medium' : 'Low';
+      const color = riskColor(risk);
+
       const marker = window.L.circleMarker([lat, lng], {
-        radius: id === selectedProjectId ? 10 : 7, color, fillColor: color, fillOpacity: 0.8, weight: 2,
+        radius: isSelected ? 10 : 7, color, fillColor: color, fillOpacity: 0.8, weight: 2,
       }).addTo(map);
-      marker.bindPopup(`<strong>${id ?? 'Project'}</strong><br/>${project.district ?? ''}, ${project.state ?? ''}<br/>Risk: ${risk.toFixed(1)}/100 (${category})<br/>Stage: ${project.acquisition_stage ?? '—'}`);
+
+      const simulationNote = isSelected && Number.isFinite(Number(selectedRisk)) && Number.isFinite(Number(baselineRisk))
+        ? `<br/>Baseline: ${Number(baselineRisk).toFixed(1)}/100<br/><strong>What-If: ${Number(selectedRisk).toFixed(1)}/100</strong>`
+        : '';
+      marker.bindPopup(`<strong>${id ?? 'Project'}</strong><br/>${project.district ?? ''}, ${project.state ?? ''}<br/>Risk: ${risk.toFixed(1)}/100 (${category})<br/>Stage: ${project.acquisition_stage ?? '—'}${simulationNote}`);
       marker.on('click', () => onSelectProject?.(id));
       markersRef.current.push(marker);
     });
@@ -81,16 +86,18 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject }) {
       const [lat, lng] = syntheticCoordinates(selected);
       map.setView([lat, lng], Math.max(map.getZoom(), 9));
     }
-  }, [projects, selectedProjectId, onSelectProject]);
+  }, [projects, selectedProjectId, selectedRisk, baselineRisk, onSelectProject]);
+
+  const hasSimulation = Number.isFinite(Number(selectedRisk)) && Number.isFinite(Number(baselineRisk));
 
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <div>
           <div className="flex items-center gap-2 font-bold text-slate-900"><MapPin className="h-4 w-4 text-blue-600" />Project GIS Map</div>
-          <p className="mt-0.5 text-[11px] text-slate-500">OpenStreetMap • coordinates are synthetic/demo until official GIS data is available</p>
+          <p className="mt-0.5 text-[11px] text-slate-500">OpenStreetMap • synthetic/demo coordinates until official GIS data is available</p>
         </div>
-        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-600">{projects.length} projects</span>
+        {hasSimulation && <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">What-If active</span>}
       </div>
       <div ref={mapRef} className="h-[460px] w-full" />
     </section>
