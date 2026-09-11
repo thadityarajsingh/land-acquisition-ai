@@ -69,5 +69,17 @@ These are fixed round-number thresholds, **not yet tuned** against validated out
 - Class imbalance in training data (861 not-delayed / 339 delayed) partially addressed via `scale_pos_weight`, but signal strength in available features limits further gains without more data or engineered features.
 - Numeric features individually show weak correlation with the target; most signal comes from categorical status fields (compensation_status, documentation_status, etc. — see EDA in Checkpoint 2).
 
-## Explainability (pending)
-SHAP-based explanation function (global feature importance + per-prediction explanation) is Checkpoint 8, in progress on a separate branch/teammate. Not yet available — this doc will be updated once merged.
+## Explainability (available)
+SHAP-based explanation is implemented in `ml/explain.py`.
+
+```python
+from ml.explain import explain_single_prediction
+
+top_factors = explain_single_prediction(features_dict)
+# Returns: {"historical_performance_score": -0.67, "land_area_acres": -0.56, ...}
+# Positive values push risk UP, negative values push risk DOWN.
+# Keys are feature names (categorical ones appear as "column_value",
+# e.g. "compensation_status_Not Started", due to one-hot encoding).
+```
+
+Use this to power the "top delay drivers" panel (SRS 4.3 / UI-04).
