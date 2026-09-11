@@ -8,6 +8,7 @@ import { useWhatIf } from './hooks/useWhatIf';
 
 export function App() {
   const [activeTab, setActiveTab] = useState('cadastral');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Custom API & State Hooks
   const {
@@ -40,6 +41,8 @@ export function App() {
           setSelectedProjectId(id);
           resetSimulation();
         }}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
       />
 
       {/* Main Layout Body */}
@@ -55,12 +58,15 @@ export function App() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F8FAFC]">
           <div className="max-w-[1600px] mx-auto">
             <Dashboard
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
               projectData={projectData}
               prediction={prediction}
               whatIfResult={whatIfResult}
               onRunSimulation={runSimulation}
               simulating={simulating}
               onResetSimulation={resetSimulation}
+              searchQuery={searchQuery}
             />
           </div>
         </main>

@@ -1,11 +1,42 @@
 import React, { useState } from 'react';
-import { Sliders, RefreshCw, RotateCcw, Sparkles, TrendingDown } from 'lucide-react';
+import { Sliders, RefreshCw, RotateCcw, Sparkles, Zap } from 'lucide-react';
 
 export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false, onReset }) {
   const [compensationMultiplier, setCompensationMultiplier] = useState(defaults.compensationMultiplier || 1.0);
   const [surveyCompletionPct, setSurveyCompletionPct] = useState(defaults.surveyCompletionPct || 58);
   const [litigationCases, setLitigationCases] = useState(defaults.litigationCases || 7);
   const [solatiumTopUpPct, setSolatiumTopUpPct] = useState(defaults.solatiumTopUpPct || 0);
+
+  const applyPreset = (preset) => {
+    let comp = 1.0;
+    let survey = 58;
+    let lit = 7;
+    let sol = 0;
+
+    if (preset === 'fast') {
+      comp = 1.75;
+      survey = 92;
+      lit = 1;
+      sol = 20;
+    } else if (preset === 'lok_adalat') {
+      comp = 1.35;
+      survey = 80;
+      lit = 2;
+      sol = 15;
+    }
+
+    setCompensationMultiplier(comp);
+    setSurveyCompletionPct(survey);
+    setLitigationCases(lit);
+    setSolatiumTopUpPct(sol);
+
+    onRunSimulation({
+      compensationMultiplier: comp,
+      surveyCompletionPct: survey,
+      litigationCases: lit,
+      solatiumTopUpPct: sol,
+    });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -28,7 +59,7 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
       
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+      <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-orange-50 text-[#F97316]">
             <Sliders className="w-4 h-4" />
@@ -52,6 +83,30 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
           <RotateCcw className="w-3.5 h-3.5" />
           Reset
         </button>
+      </div>
+
+      {/* Quick Scenario Presets */}
+      <div className="mb-4 bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+          <Zap className="w-3 h-3 text-[#F97316]" />
+          Demo Presets:
+        </span>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => applyPreset('lok_adalat')}
+            className="text-[11px] px-2 py-1 rounded bg-white hover:bg-blue-50 text-slate-700 hover:text-[#1E3A8A] font-semibold border border-slate-300 transition"
+          >
+            Pre-Lok Adalat (1.35x)
+          </button>
+          <button
+            type="button"
+            onClick={() => applyPreset('fast')}
+            className="text-[11px] px-2 py-1 rounded bg-orange-500 hover:bg-orange-600 text-white font-bold transition shadow-xs"
+          >
+            Fast Corridor (1.75x)
+          </button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -149,7 +204,7 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
           <button
             type="submit"
             disabled={simulating}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-sm shadow-sm hover:shadow transition disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-sm shadow-sm hover:shadow transition disabled:opacity-60 cursor-pointer active:scale-98"
           >
             {simulating ? (
               <>

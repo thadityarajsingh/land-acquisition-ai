@@ -1,8 +1,39 @@
-import React from 'react';
-import { Search, ShieldAlert, Layers, ChevronDown, Bell, CheckCircle2, SlidersHorizontal } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, ShieldAlert, Layers, ChevronDown, Bell, CheckCircle2, X, AlertTriangle, Scale, Clock } from 'lucide-react';
 
-export function TopNav({ projects = [], selectedProjectId, onSelectProject }) {
+export function TopNav({
+  projects = [],
+  selectedProjectId,
+  onSelectProject,
+  searchQuery = '',
+  onSearchChange
+}) {
+  const [showNotifications, setShowNotifications] = useState(false);
   const currentProject = projects.find(p => p.id === selectedProjectId) || projects[0];
+
+  const notifications = [
+    {
+      id: 1,
+      title: "Bombay High Court Stay Writ #4182/2024",
+      desc: "Listed for urgent hearing on 18-Sep-2024 before Division Bench (Court 4).",
+      type: "critical",
+      time: "2h ago"
+    },
+    {
+      id: 2,
+      title: "Section 20(E) Statutory Declaration",
+      desc: "Draft notification gazette copy prepared; 44 days left before lapsing window.",
+      type: "warning",
+      time: "5h ago"
+    },
+    {
+      id: 3,
+      title: "Drone Resurvey (Gut 105/2)",
+      desc: "DGPS raw coordinates validated by SLR Paud sub-division.",
+      type: "success",
+      time: "1d ago"
+    }
+  ];
 
   return (
     <header className="bg-[#0F172A] border-b border-slate-800 text-white sticky top-0 z-40 px-4 lg:px-6 py-2.5 shadow-md">
@@ -50,27 +81,67 @@ export function TopNav({ projects = [], selectedProjectId, onSelectProject }) {
             </div>
           </div>
 
-          <div className="relative hidden md:block w-48">
+          <div className="relative hidden md:block w-52">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
               placeholder="Search Gut / Survey No..."
-              className="w-full bg-slate-900/80 text-xs pl-8 pr-3 py-2 rounded-lg border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full bg-slate-900/80 text-xs pl-8 pr-3 py-2 rounded-lg border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>
 
         {/* Right Status Badges & Officer Identity */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 relative">
           <div className="hidden lg:flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-lg border border-slate-800 text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="text-slate-300 text-[11px] font-medium">RFCTLARR Sec 20(E) Compliance</span>
           </div>
 
-          <button className="p-2 text-slate-400 hover:text-slate-200 bg-slate-800/80 hover:bg-slate-800 rounded-lg border border-slate-700 transition relative">
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-[#F97316] rounded-full"></span>
-          </button>
+          {/* Bell Notifications Button */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowNotifications(prev => !prev)}
+              className="p-2 text-slate-400 hover:text-slate-200 bg-slate-800/80 hover:bg-slate-800 rounded-lg border border-slate-700 transition relative"
+            >
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-[#F97316] rounded-full animate-ping"></span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-[#F97316] rounded-full"></span>
+            </button>
+
+            {/* Notifications Dropdown Drawer */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-4 text-xs z-50 animate-in fade-in">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800 mb-3">
+                  <span className="font-bold text-slate-200 flex items-center gap-1.5">
+                    <ShieldAlert className="w-4 h-4 text-[#F97316]" />
+                    Statutory Alerts (3)
+                  </span>
+                  <button
+                    onClick={() => setShowNotifications(false)}
+                    className="text-slate-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  {notifications.map(n => (
+                    <div key={n.id} className="p-2.5 rounded-lg bg-slate-800/70 border border-slate-700/60 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 line-clamp-1">{n.title}</span>
+                        <span className="text-[10px] text-slate-400 font-mono">{n.time}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-snug">{n.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Officer Persona */}
           <div className="flex items-center gap-2 pl-2 border-l border-slate-800">

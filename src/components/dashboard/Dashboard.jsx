@@ -1,25 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CadastralMap } from './CadastralMap';
 import { RiskScoreCard } from './RiskScoreCard';
 import { RiskDrivers } from './RiskDrivers';
 import { WhatIfPanel } from './WhatIfPanel';
 import { ComparisonView } from './ComparisonView';
 import { MitigationProtocols } from './MitigationProtocols';
+import { CorridorView } from './CorridorView';
+import { DisputesView } from './DisputesView';
+import { AuditTrailView } from './AuditTrailView';
 import { MapPin, Calendar, FileText, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 export function Dashboard({
+  activeTab = 'cadastral',
+  setActiveTab,
   projectData,
   prediction,
   whatIfResult,
   onRunSimulation,
   simulating,
-  onResetSimulation
+  onResetSimulation,
+  searchQuery = ''
 }) {
   const [selectedParcel, setSelectedParcel] = useState(null);
 
-  // Active risk score: if simulation is active, we can show delta, while RiskScoreCard shows original or simulated
+  // Search filter across parcels
+  const filteredParcels = (projectData?.parcels || []).filter(p => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return p.gutNo.toLowerCase().includes(q) || p.owner.toLowerCase().includes(q);
+  });
+
+  // When search matches a parcel, auto-select it
+  useEffect(() => {
+    if (searchQuery && filteredParcels.length > 0) {
+      setSelectedParcel(filteredParcels[0]);
+    }
+  }, [searchQuery]);
+
   const currentRiskScore = whatIfResult ? whatIfResult.simulatedScore : (prediction?.riskScore || projectData?.riskScore || 82);
-  const originalRiskScore = prediction?.riskScore || projectData?.riskScore || 82;
   const currentDrivers = whatIfResult?.updatedDrivers || prediction?.drivers || projectData?.drivers || [];
 
   return (
@@ -71,50 +89,115 @@ export function Dashboard({
         </div>
       </div>
 
-      {/* Cadastral GIS Vector Map (Command Center Centerpiece) */}
-      <section>
-        <CadastralMap
-          parcels={projectData?.parcels || []}
-          selectedGut={selectedParcel?.gutNo}
-          onSelectParcel={setSelectedParcel}
-        />
-      </section>
+      {/* DYNAMIC VIEW ROUTING BASED ON ACTIVE SIDEBAR TAB */}
 
-      {/* Analytical Grid: Explain & Simulate */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Left Side: Explainability (Risk Score & Top SHAP Drivers) */}
-        <div className="lg:col-span-5 space-y-6">
-          <RiskScoreCard
-            score={currentRiskScore}
+      {/* VIEW 1: CADASTRAL GIS MAP & OVERVIEW */}
+      {activeTab === 'cadastral' && (
+        <div className="space-y-6">
+          <section>
+            <CadastralMap
+              parcels={filteredParcels.length > 0 ? filteredParcels : projectData?.parcels || []}
+              selectedGut={selectedParcel?.gutNo}
+              onSelectParcel={setSelectedParcel}
+            />
+          </section>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-5 space-y-6">
+              <RiskScoreCard
+                score={currentRiskScore}
+                projectData={projectData}
+                simulationDelta={whatIfResult ? whatIfResult.scoreDelta : null}
+              />
+              <RiskDrivers drivers={currentDrivers} />
+            </div>
+
+            <div className="lg:col-span-7 space-y-6">
+              <WhatIfPanel
+                defaults={projectData?.simulationDefaults || {}}
+                onRunSimulation={onRunSimulation}
+                simulating={simulating}
+                onReset={onResetSimulation}
+              />
+              <ComparisonView
+                baseline={projectData}
+                simulation={whatIfResult}
+              />
+            </div>
+          </div>
+
+          <section>
+            <MitigationProtocols
+              recommendations={projectData?.recommendations || []}
+              projectData={projectData}
+            />
+          </section>
+        </div>
+      )}
+
+      {/* VIEW 2: CORRIDOR ASSESSMENT */}
+      {activeTab === 'corridor' && (
+        <CorridorView
+          projectData={projectData}
+          onSelectParcel={(parcel) => {
+            setSelectedParcel(parcel);
+            if (setActiveTab) setActiveTab('cadastral');
+          }}
+        />
+      )}
+
+      {/* VIEW 3: DISPUTES & STAY WRITS */}
+      {activeTab === 'disputes' && (
+        <DisputesView
+          projectData={projectData}
+        />
+      )}
+
+      {/* VIEW 4: WHAT-IF SIMULATION STUDIO */}
+      {activeTab === 'whatif' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-6 space-y-6">
+              <WhatIfPanel
+                defaults={projectData?.simulationDefaults || {}}
+                onRunSimulation={onRunSimulation}
+                simulating={simulating}
+                onReset={onResetSimulation}
+              />
+              <RiskDrivers drivers={currentDrivers} />
+            </div>
+
+            <div className="lg:col-span-6 space-y-6">
+              <ComparisonView
+                baseline={projectData}
+                simulation={whatIfResult}
+              />
+              <RiskScoreCard
+                score={currentRiskScore}
+                projectData={projectData}
+                simulationDelta={whatIfResult ? whatIfResult.scoreDelta : null}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW 5: MITIGATION PROTOCOLS */}
+      {activeTab === 'protocols' && (
+        <div className="space-y-6">
+          <MitigationProtocols
+            recommendations={projectData?.recommendations || []}
             projectData={projectData}
-            simulationDelta={whatIfResult ? whatIfResult.scoreDelta : null}
-          />
-          <RiskDrivers drivers={currentDrivers} />
-        </div>
-
-        {/* Right Side: What-If Simulation Controls & Before/After Diff */}
-        <div className="lg:col-span-7 space-y-6">
-          <WhatIfPanel
-            defaults={projectData?.simulationDefaults || {}}
-            onRunSimulation={onRunSimulation}
-            simulating={simulating}
-            onReset={onResetSimulation}
-          />
-          <ComparisonView
-            baseline={projectData}
-            simulation={whatIfResult}
           />
         </div>
+      )}
 
-      </div>
-
-      {/* Bottom Section: Mitigation & Statutory Directives */}
-      <section>
-        <MitigationProtocols
-          recommendations={projectData?.recommendations || []}
+      {/* VIEW 6: STATUTORY AUDIT TRAIL */}
+      {activeTab === 'audit' && (
+        <AuditTrailView
+          projectData={projectData}
         />
-      </section>
+      )}
 
     </div>
   );
