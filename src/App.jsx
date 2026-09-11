@@ -10,7 +10,6 @@ import { useWhatIf } from "./hooks/useWhatIf";
 import { PanelLeft } from "lucide-react";
 
 export function App() {
-  // Authentication session state with localStorage persistence
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const saved = localStorage.getItem("bhoomiiq_auth_session");
@@ -20,10 +19,8 @@ export function App() {
     }
   });
 
-  // Sidebar sliding window drawer state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Clear any legacy pinned preference so left panel is always a sliding window
   React.useEffect(() => {
     try {
       localStorage.removeItem("bhoomiiq_sidebar_pinned");
@@ -53,7 +50,7 @@ export function App() {
     simulating,
     runSimulation,
     resetSimulation,
-  } = useWhatIf();
+  } = useWhatIf(projectData);
 
   const handleLogin = (userData) => {
     setCurrentUser(userData);
@@ -77,7 +74,6 @@ export function App() {
     setIsSidebarOpen((prev) => !prev);
   };
 
-  // If officer is not authenticated, render Login Page
   if (!currentUser) {
     return <LoginPage onLogin={handleLogin} />;
   }
@@ -108,7 +104,6 @@ export function App() {
         }}
       />
 
-      {/* Floating Edge Trigger to open sliding window */}
       {!isSidebarOpen && (
         <button
           type="button"
