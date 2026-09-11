@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+import pandas as pd
 
 from backend.routes.projects import load_projects
 
@@ -86,15 +87,20 @@ def get_project_recommendations(project_id: str):
         raise HTTPException(status_code=404, detail="Project not found")
 
     row = project.iloc[0]
+
+    def value(column, default):
+        raw = row[column]
+        return default if pd.isna(raw) else raw
+
     request = RecommendationRequest(
-        compensation_status=row["compensation_status"],
-        approval_delay_days=int(row["approval_delay_days"]),
-        legal_disputes=int(row["legal_disputes"]),
-        rehab_progress_pct=float(row["rehab_progress_pct"]),
-        stakeholder_responsiveness_pct=float(row["stakeholder_responsiveness_pct"]),
-        documentation_status=row["documentation_status"],
-        notification_status=row["notification_status"],
-        possession_status=row["possession_status"],
+        compensation_status=str(value("compensation_status", "Pending")),
+        approval_delay_days=int(value("approval_delay_days", 0)),
+        legal_disputes=int(value("legal_disputes", 0)),
+        rehab_progress_pct=float(value("rehab_progress_pct", 0)),
+        stakeholder_responsiveness_pct=float(value("stakeholder_responsiveness_pct", 0)),
+        documentation_status=str(value("documentation_status", "Incomplete")),
+        notification_status=str(value("notification_status", "Pending")),
+        possession_status=str(value("possession_status", "Partial")),
     )
 
     recommendations = build_recommendations(request)
