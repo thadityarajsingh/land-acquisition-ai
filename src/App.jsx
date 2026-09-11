@@ -110,6 +110,13 @@ export function App() {
         onToggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
         isSidebarPinned={isSidebarPinned}
+        onSelectTab={setActiveTab}
+        onReturnToTop={() => {
+          setActiveTab("cadastral");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          const mainEl = document.querySelector('main');
+          if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
       />
 
       {/* Floating Edge Trigger when sidebar is closed in slide mode */}
