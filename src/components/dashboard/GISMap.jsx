@@ -51,17 +51,18 @@ async function ensureClusterAssets() {
 
 function cadastralGeometry(center, parcels = []) {
   const [lat, lng] = center;
-  const width = 0.018;
-  const height = 0.012;
+  // Small parcel footprint so the vector surface is visibly tied to the selected point.
+  const width = 0.0048;
+  const height = 0.0032;
   const columns = 5;
   return Array.from({ length: columns }, (_, index) => {
     const left = lng - width / 2 + (width / columns) * index;
     const right = lng - width / 2 + (width / columns) * (index + 1);
-    const skew = (index - 2) * 0.0008;
+    const skew = (index - 2) * 0.00018;
     const parcel = parcels[index] || {};
     return {
       parcel,
-      positions: [[lat - height / 2, left], [lat - height / 2 + skew, right], [lat + height / 2, right + 0.0002], [lat + height / 2 - skew, left - 0.0002]],
+      positions: [[lat - height / 2, left], [lat - height / 2 + skew, right], [lat + height / 2, right + 0.00005], [lat + height / 2 - skew, left - 0.00005]],
     };
   });
 }
@@ -120,7 +121,10 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     });
     clusterRef.current = markerLayer; map.addLayer(markerLayer);
     const selected = projects.find(project => (project.project_id ?? project.id) === selectedProjectId);
-    if (selected) { const [lat, lng] = getCoordinates(selected, 0); map.setView([lat, lng], Math.max(map.getZoom(), 9)); }
+    if (selected) {
+      const [lat, lng] = getCoordinates(selected, 0);
+      map.setView([lat, lng], 12);
+    }
     return () => { markerLayer.clearLayers(); if (map.hasLayer(markerLayer)) map.removeLayer(markerLayer); if (clusterRef.current === markerLayer) clusterRef.current = null; };
   }, [projects, selectedProjectId, selectedRisk, baselineRisk, onSelectProject]);
 
@@ -137,7 +141,9 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     const geometry = cadastralGeometry(center, parcels);
     geometry.forEach(({ parcel, positions }, index) => {
       const baseRisk = Number(parcel.riskScore ?? selected.risk_score ?? selected.riskScore ?? 50);
-      const risk = Number.isFinite(Number(selectedRisk)) ? Math.max(0, Math.min(100, baseRisk + (Number(selectedRisk) - Number(baselineRisk || baseRisk)) * 0.35)) : baseRisk;
+      const baseline = Number.isFinite(Number(baselineRisk)) ? Number(baselineRisk) : baseRisk;
+      const simulated = Number.isFinite(Number(selectedRisk)) ? Number(selectedRisk) : baseline;
+      const risk = Math.max(0, Math.min(100, baseRisk + (simulated - baseline) * 0.35));
       const polygon = L.polygon(positions, { color: riskColor(risk), weight: index === 0 ? 3 : 2, fillColor: riskColor(risk), fillOpacity: 0.22, dashArray: '5 4' });
       const gut = parcel.gutNo || `Parcel ${String.fromCharCode(65 + index)}`;
       polygon.bindTooltip(gut, { permanent: true, direction: 'center', className: 'cadastral-label' });
