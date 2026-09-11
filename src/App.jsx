@@ -16,9 +16,7 @@ export function App() {
     try {
       const saved = localStorage.getItem("bhoomiiq_auth_session");
       return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("cadastral");
@@ -41,9 +39,12 @@ export function App() {
     setCurrentUser(null);
     try { localStorage.removeItem("bhoomiiq_auth_session"); } catch (err) { console.error(err); }
   };
+  const handleProjectSelect = (id) => {
+    setSelectedProjectId(id);
+    resetSimulation();
+  };
 
   if (!currentUser) return <LoginPage onLogin={handleLogin} />;
-
   const isLoading = projectsLoading || predictionLoading || recommendationsLoading;
 
   return (
@@ -51,7 +52,7 @@ export function App() {
       <TopNav
         projects={projects}
         selectedProjectId={selectedProjectId}
-        onSelectProject={(id) => { setSelectedProjectId(id); resetSimulation(); }}
+        onSelectProject={handleProjectSelect}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         currentUser={currentUser}
@@ -75,7 +76,13 @@ export function App() {
           <div className="max-w-[1600px] mx-auto space-y-5">
             {isLoading ? <DashboardSkeleton /> : (
               <>
-                <GISMap projects={projects} selectedProjectId={selectedProjectId} onSelectProject={setSelectedProjectId} />
+                <GISMap
+                  projects={projects}
+                  selectedProjectId={selectedProjectId}
+                  onSelectProject={handleProjectSelect}
+                  baselineRisk={prediction?.riskScore}
+                  selectedRisk={whatIfResult?.simulatedScore}
+                />
                 <Dashboard
                   activeTab={activeTab}
                   setActiveTab={setActiveTab}
