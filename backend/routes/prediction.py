@@ -2,6 +2,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from backend.services.prediction_service import predict_project
+from backend.services.explainability_service import explain_single_prediction
+
 
 router = APIRouter(prefix="/predict", tags=["Prediction"])
 
@@ -31,3 +33,11 @@ class PredictionRequest(BaseModel):
 def predict(request: PredictionRequest):
     features = request.model_dump()
     return predict_project(features)
+
+
+@router.post("/explain")
+def explain(request: PredictionRequest):
+    features = request.model_dump()
+    return {
+        "top_factors": explain_single_prediction(features)
+    }
