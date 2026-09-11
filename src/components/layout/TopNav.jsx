@@ -76,7 +76,7 @@ export function TopNav({
   const officerDistrict = currentUser?.district || "Pune West Arc Division";
 
   return (
-    <header className="bg-[#0A1120] border-b border-slate-800/80 text-white sticky top-0 z-40 px-4 sm:px-6 py-2.5 shadow-sm backdrop-blur-md">
+    <header className="bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#C2410C] border-b border-orange-700/60 text-white sticky top-0 z-40 px-4 sm:px-6 py-2.5 shadow-md shadow-orange-950/15 backdrop-blur-md">
       <div className="max-w-[1720px] mx-auto flex items-center justify-between gap-4">
         
         {/* Brand & Gov Identity with Sidebar Toggle */}
@@ -87,29 +87,29 @@ export function TopNav({
               onClick={onToggleSidebar}
               className={`p-1.5 rounded-lg border transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
                 isSidebarOpen || isSidebarPinned
-                  ? 'bg-[#F97316]/20 border-[#F97316]/50 text-[#F97316] shadow-sm shadow-orange-500/10'
-                  : 'bg-slate-900/90 hover:bg-slate-800 border-slate-700/80 text-slate-300 hover:text-white'
+                  ? 'bg-white text-[#EA580C] border-white shadow-md font-bold'
+                  : 'bg-black/20 hover:bg-black/30 border-white/25 text-white'
               }`}
               title={isSidebarOpen ? "Close Modules Menu" : "Open Modules Menu (Slide Panel)"}
             >
-              <PanelLeft className="w-4 h-4 text-[#F97316]" />
-              <span className="text-xs font-semibold text-slate-200 hidden sm:inline">Modules</span>
+              <PanelLeft className={`w-4 h-4 ${isSidebarOpen || isSidebarPinned ? 'text-[#EA580C]' : 'text-white'}`} />
+              <span className="text-xs font-semibold hidden sm:inline">Modules</span>
             </button>
           )}
 
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-[#1E3A8A] border border-blue-400/30 flex items-center justify-center text-white font-black tracking-wider shadow-sm">
-            <span className="text-[#F97316] text-lg">B</span>
+          <div className="w-8 h-8 rounded-lg bg-white border border-white/40 flex items-center justify-center text-[#EA580C] font-black tracking-wider shadow-sm">
+            <span className="text-lg font-black">B</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-sm sm:text-base tracking-tight text-white">
-                Bhoomi<span className="text-[#F97316]">IQ</span>
+              <span className="font-extrabold text-sm sm:text-base tracking-tight text-white drop-shadow-sm">
+                Bhoomi<span className="text-amber-100">IQ</span>
               </span>
-              <span className="text-[9px] uppercase font-bold tracking-wider bg-orange-500/15 text-[#F97316] px-1.5 py-0.2 rounded border border-orange-500/25">
+              <span className="text-[9px] uppercase font-bold tracking-wider bg-white/20 text-white px-1.5 py-0.2 rounded border border-white/30 shadow-xs">
                 v2.4 Live
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 font-medium hidden sm:block">
+            <p className="text-[10px] text-orange-100 font-medium hidden sm:block leading-tight">
               National Land Acquisition Risk Intelligence
             </p>
           </div>
@@ -120,12 +120,12 @@ export function TopNav({
           <div className="relative flex-1">
             <label htmlFor="project-selector" className="sr-only">Select Infrastructure Corridor</label>
             <div className="relative">
-              <Layers className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Layers className="w-3.5 h-3.5 text-orange-100 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <select
                 id="project-selector"
                 value={selectedProjectId}
                 onChange={(e) => onSelectProject(e.target.value)}
-                className="w-full bg-slate-900/90 text-slate-200 text-xs pl-8 pr-8 py-1.5 rounded-lg border border-slate-700/80 focus:outline-none focus:ring-1.5 focus:ring-[#F97316] font-medium appearance-none cursor-pointer hover:bg-slate-800/80 transition"
+                className="w-full bg-black/20 hover:bg-black/25 text-white text-xs pl-8 pr-8 py-1.5 rounded-lg border border-white/25 focus:outline-none focus:ring-2 focus:ring-white/40 font-medium appearance-none cursor-pointer transition shadow-inner"
               >
                 {projects.map((p) => (
                   <option key={p.id} value={p.id} className="bg-slate-900 text-white py-1">
@@ -133,27 +133,27 @@ export function TopNav({
                   </option>
                 ))}
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-orange-100 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 
           <div className="relative hidden md:block w-48">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-orange-100 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
               placeholder="Search Gut / Owner..."
-              className="w-full bg-slate-900/90 text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-700/80 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1.5 focus:ring-blue-500"
+              className="w-full bg-black/20 hover:bg-black/25 text-xs pl-8 pr-3 py-1.5 rounded-lg border border-white/25 text-white placeholder-orange-100/70 focus:outline-none focus:ring-2 focus:ring-white/40 shadow-inner"
             />
           </div>
         </div>
 
         {/* Right: Live Status, Notifications & Officer Profile with Sign Out */}
         <div className="flex items-center gap-3 shrink-0 relative">
-          <div className="hidden lg:flex items-center gap-1.5 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-800 text-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-slate-300 text-[11px] font-medium">RFCTLARR Compliant</span>
+          <div className="hidden lg:flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-lg border border-white/20 text-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+            <span className="text-white text-[11px] font-medium">RFCTLARR Compliant</span>
           </div>
 
           {/* Notifications Button */}
@@ -161,16 +161,16 @@ export function TopNav({
             <button
               type="button"
               onClick={() => setShowNotifications(prev => !prev)}
-              className="p-1.5 text-slate-400 hover:text-slate-200 bg-slate-900 hover:bg-slate-800 rounded-lg border border-slate-700/80 transition relative"
+              className="p-1.5 text-white hover:text-white bg-black/20 hover:bg-black/30 rounded-lg border border-white/25 transition relative cursor-pointer"
               title="Statutory Alerts"
             >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-[#F97316] rounded-full"></span>
+              <Bell className="w-4 h-4 text-white" />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-white rounded-full"></span>
             </button>
 
             {/* Notification Drawer */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-xl shadow-xl p-4 text-xs z-50 animate-in fade-in">
+              <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-4 text-xs z-50 animate-in fade-in">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-800 mb-2.5">
                   <span className="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
                     <AlertCircle className="w-3.5 h-3.5 text-[#F97316]" />
@@ -178,7 +178,7 @@ export function TopNav({
                   </span>
                   <button
                     onClick={() => setShowNotifications(false)}
-                    className="text-slate-400 hover:text-white"
+                    className="text-slate-400 hover:text-white cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -204,19 +204,19 @@ export function TopNav({
             <button
               type="button"
               onClick={() => setShowProfileMenu(prev => !prev)}
-              className="flex items-center gap-2 pl-2 border-l border-slate-800 hover:opacity-90 transition group cursor-pointer focus:outline-none"
+              className="flex items-center gap-2 pl-2 border-l border-white/25 hover:opacity-95 transition group cursor-pointer focus:outline-none"
               title="Officer Profile & Session Options"
             >
-              <div className={`w-8 h-8 rounded-full ${officerBg} border border-blue-400/40 text-xs text-white flex items-center justify-center font-bold shadow-sm group-hover:ring-2 group-hover:ring-[#F97316]/50 transition`}>
+              <div className="w-8 h-8 rounded-full bg-white text-[#EA580C] border border-white/50 text-xs flex items-center justify-center font-black shadow-sm group-hover:ring-2 group-hover:ring-white transition">
                 {officerInitials}
               </div>
               <div className="hidden xl:block text-left">
-                <div className="text-xs font-semibold text-slate-200 leading-tight group-hover:text-white transition">
+                <div className="text-xs font-bold text-white leading-tight">
                   {officerName}
                 </div>
-                <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                <div className="text-[10px] text-orange-100 flex items-center gap-1">
                   <span>{officerRole}</span>
-                  <ChevronDown className={`w-2.5 h-2.5 transition-transform duration-200 ${showProfileMenu ? 'rotate-180 text-[#F97316]' : ''}`} />
+                  <ChevronDown className={`w-2.5 h-2.5 transition-transform duration-200 text-orange-100 ${showProfileMenu ? 'rotate-180 text-white' : ''}`} />
                 </div>
               </div>
             </button>
@@ -259,7 +259,7 @@ export function TopNav({
                       setShowProfileMenu(false);
                       if (onLogout) onLogout();
                     }}
-                    className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/40 text-xs font-bold transition duration-150 active:scale-[0.98]"
+                    className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/40 text-xs font-bold transition duration-150 active:scale-[0.98] cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Sign Out</span>
@@ -274,7 +274,7 @@ export function TopNav({
             <button
               type="button"
               onClick={onLogout}
-              className="p-1.5 text-slate-400 hover:text-red-400 bg-slate-900 hover:bg-red-500/10 rounded-lg border border-slate-700/80 hover:border-red-500/30 transition"
+              className="p-1.5 text-white hover:text-white bg-black/20 hover:bg-red-600/40 rounded-lg border border-white/25 hover:border-red-400/40 transition cursor-pointer"
               title="Sign Out of BhoomiIQ"
             >
               <LogOut className="w-4 h-4" />
@@ -287,3 +287,4 @@ export function TopNav({
     </header>
   );
 }
+
