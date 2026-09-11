@@ -11,7 +11,7 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null 
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] p-5 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] p-5 hover:shadow-md transition-all duration-300">
       
       {/* Header */}
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
@@ -38,7 +38,7 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null 
                 cx="70"
                 cy="70"
                 r={radius}
-                className="text-slate-100"
+                className="text-slate-100 transition-colors"
                 strokeWidth="10"
                 stroke="currentColor"
                 fill="transparent"
@@ -53,19 +53,21 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null 
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
                 fill="transparent"
-                className="transition-all duration-700 ease-out"
+                style={{
+                  transition: 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.4s ease'
+                }}
               />
             </svg>
             
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-3xl font-black text-slate-900 font-mono tracking-tight">
+              <span className="text-3xl font-black text-slate-900 font-mono tracking-tight transition-all duration-300">
                 {score}
               </span>
               <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
                 Score / 100
               </span>
               {simulationDelta !== null && simulationDelta !== 0 && (
-                <span className={`text-[10px] font-bold font-mono px-1.5 py-0.2 rounded-full mt-0.5 ${
+                <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-full mt-0.5 transition-all duration-300 animate-view-fade-in ${
                   simulationDelta < 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                 }`}>
                   {simulationDelta > 0 ? `+${simulationDelta}` : simulationDelta} pts
@@ -85,7 +87,7 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null 
         {/* Operational Metrics */}
         <div className="sm:col-span-7 space-y-2.5">
           
-          <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/60">
+          <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/60 hover:bg-slate-50 transition-colors">
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-slate-500 flex items-center gap-1.5 text-[11px] font-medium">
                 <Clock className="w-3.5 h-3.5 text-rose-500" />
@@ -100,7 +102,7 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null 
             </p>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/60">
+          <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/60 hover:bg-slate-50 transition-colors">
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-slate-500 flex items-center gap-1.5 text-[11px] font-medium">
                 <AlertOctagon className="w-3.5 h-3.5 text-amber-500" />

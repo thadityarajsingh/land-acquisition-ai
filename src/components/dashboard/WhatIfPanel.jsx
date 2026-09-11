@@ -57,7 +57,7 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] p-5 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] p-5 hover:shadow-md transition-all duration-300">
       
       {/* Header */}
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
@@ -73,7 +73,7 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
         <button
           type="button"
           onClick={handleReset}
-          className="text-xs text-slate-400 hover:text-slate-700 flex items-center gap-1 font-medium transition cursor-pointer"
+          className="text-xs text-slate-400 hover:text-slate-700 flex items-center gap-1 font-medium transition-colors cursor-pointer active:scale-95"
           title="Reset to statutory baseline"
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -91,14 +91,14 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
           <button
             type="button"
             onClick={() => applyPreset('lok_adalat')}
-            className="text-[11px] px-2.5 py-1 rounded-lg bg-white hover:bg-blue-50/60 text-slate-700 hover:text-[#1E3A8A] font-semibold border border-slate-200 shadow-xs transition cursor-pointer"
+            className="text-[11px] px-2.5 py-1 rounded-lg bg-white hover:bg-blue-50/60 text-slate-700 hover:text-[#1E3A8A] font-semibold border border-slate-200 shadow-xs transition-all duration-150 interactive-tap cursor-pointer"
           >
             Pre-Lok Adalat (1.35x)
           </button>
           <button
             type="button"
             onClick={() => applyPreset('fast')}
-            className="text-[11px] px-2.5 py-1 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white font-bold transition shadow-xs cursor-pointer"
+            className="text-[11px] px-2.5 py-1 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white font-bold transition-all duration-150 interactive-tap shadow-xs cursor-pointer"
           >
             Fast Corridor (1.75x)
           </button>
@@ -112,7 +112,7 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
         <div className="space-y-1">
           <div className="flex justify-between text-xs font-semibold text-slate-700">
             <span>Land Compensation Multiplier:</span>
-            <span className="font-mono text-[#F97316] font-bold text-[11px] bg-orange-50 px-2 py-0.5 rounded border border-orange-200/60">
+            <span className="font-mono text-[#F97316] font-bold text-[11px] bg-orange-50 px-2 py-0.5 rounded border border-orange-200/60 transition-all duration-150">
               {Number(compensationMultiplier).toFixed(2)}x Circle Rate
             </span>
           </div>
@@ -136,7 +136,7 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
         <div className="space-y-1">
           <div className="flex justify-between text-xs font-semibold text-slate-700">
             <span>Joint Measurement Survey (JMS):</span>
-            <span className="font-mono text-blue-700 font-bold text-[11px] bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
+            <span className="font-mono text-blue-700 font-bold text-[11px] bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60 transition-all duration-150">
               {surveyCompletionPct}% Verified
             </span>
           </div>
@@ -160,7 +160,7 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
         <div className="space-y-1">
           <div className="flex justify-between text-xs font-semibold text-slate-700">
             <span>Active High Court Writs:</span>
-            <span className="font-mono text-rose-600 font-bold text-[11px] bg-rose-50 px-2 py-0.5 rounded border border-rose-200/60">
+            <span className="font-mono text-rose-600 font-bold text-[11px] bg-rose-50 px-2 py-0.5 rounded border border-rose-200/60 transition-all duration-150">
               {litigationCases} Petitions
             </span>
           </div>
@@ -185,7 +185,7 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
           <button
             type="submit"
             disabled={simulating}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#F97316] to-[#EA580C] hover:from-[#EA580C] hover:to-[#C2410C] text-white font-bold text-xs shadow-sm hover:shadow transition disabled:opacity-60 cursor-pointer active:scale-98"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#F97316] to-[#EA580C] hover:from-[#EA580C] hover:to-[#C2410C] text-white font-bold text-xs shadow-sm hover:shadow-md transition-all duration-150 interactive-tap disabled:opacity-60 cursor-pointer"
           >
             {simulating ? (
               <>

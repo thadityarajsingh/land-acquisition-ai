@@ -18,7 +18,6 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
   const handleZoomOut = () => setZoomLevel(prev => Math.max(0.7, Number((prev - 0.15).toFixed(2))));
   const handleZoomReset = () => setZoomLevel(1);
 
-  // Determine fill color based on active layer
   const getPolygonFill = (parcel, isSelected) => {
     if (activeLayer === 'valuation') {
       const spread = (parcel.compensationDemanded / parcel.awardedCompensation) || 1;
@@ -33,7 +32,7 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
   };
 
   return (
-    <div className="bg-[#0A0F1D] rounded-2xl border border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[460px]">
+    <div className="bg-[#0A0F1D] rounded-2xl border border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[460px] transition-all duration-300">
       
       {/* Map Control Bar */}
       <div className="bg-slate-950/70 border-b border-slate-800/80 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-300 backdrop-blur-sm">
@@ -48,12 +47,12 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
           </span>
         </div>
 
-        {/* Layer Toggles (Glass Segmented Pills) */}
+        {/* Layer Toggles */}
         <div className="flex items-center gap-1 bg-slate-900/90 p-1 rounded-lg border border-slate-800">
           <button
             type="button"
             onClick={() => setActiveLayer('cadastral')}
-            className={`px-3 py-1 rounded-md text-[11px] font-medium transition ${
+            className={`px-3 py-1 rounded-md text-[11px] font-medium transition-all duration-200 cursor-pointer ${
               activeLayer === 'cadastral'
                 ? 'bg-[#1E3A8A] text-white shadow-sm font-semibold'
                 : 'text-slate-400 hover:text-white'
@@ -64,7 +63,7 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
           <button
             type="button"
             onClick={() => setActiveLayer('valuation')}
-            className={`px-3 py-1 rounded-md text-[11px] font-medium transition ${
+            className={`px-3 py-1 rounded-md text-[11px] font-medium transition-all duration-200 cursor-pointer ${
               activeLayer === 'valuation'
                 ? 'bg-[#1E3A8A] text-white shadow-sm font-semibold'
                 : 'text-slate-400 hover:text-white'
@@ -116,13 +115,12 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
         {/* SVG Polygon Grid */}
         <div className="flex-1 relative p-4 flex items-center justify-center min-h-[320px] overflow-hidden">
           
-          {/* Subtle GIS Coordinates Grid Overlay */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b10_1px,transparent_1px),linear-gradient(to_bottom,#1e293b10_1px,transparent_1px)] bg-[size:28px_28px] pointer-events-none" />
 
           {/* Minimalist Floating Controls */}
           <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10">
             <div
-              className="w-7 h-7 rounded-lg bg-slate-900/90 border border-slate-700/80 flex items-center justify-center text-slate-300 shadow-sm"
+              className="w-7 h-7 rounded-lg bg-slate-900/90 border border-slate-700/80 flex items-center justify-center text-slate-300 shadow-sm transition-transform duration-200 hover:scale-105"
               title="North Indicator"
             >
               <Compass className="w-3.5 h-3.5 text-[#F97316]" />
@@ -130,7 +128,7 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
             <button
               type="button"
               onClick={handleZoomIn}
-              className="w-7 h-7 rounded-lg bg-slate-900/90 border border-slate-700/80 flex items-center justify-center text-slate-300 shadow-sm hover:bg-slate-800 transition active:scale-95 cursor-pointer"
+              className="w-7 h-7 rounded-lg bg-slate-900/90 border border-slate-700/80 flex items-center justify-center text-slate-300 shadow-sm hover:bg-slate-800 transition-all duration-150 active:scale-90 cursor-pointer"
               title="Zoom In"
             >
               <ZoomIn className="w-3.5 h-3.5" />
@@ -138,7 +136,7 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
             <button
               type="button"
               onClick={handleZoomOut}
-              className="w-7 h-7 rounded-lg bg-slate-900/90 border border-slate-700/80 flex items-center justify-center text-slate-300 shadow-sm hover:bg-slate-800 transition active:scale-95 cursor-pointer"
+              className="w-7 h-7 rounded-lg bg-slate-900/90 border border-slate-700/80 flex items-center justify-center text-slate-300 shadow-sm hover:bg-slate-800 transition-all duration-150 active:scale-90 cursor-pointer"
               title="Zoom Out"
             >
               <ZoomOut className="w-3.5 h-3.5" />
@@ -146,14 +144,14 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
             <button
               type="button"
               onClick={handleZoomReset}
-              className="w-7 h-7 rounded-lg bg-slate-900/90 border border-slate-700/80 flex items-center justify-center text-slate-400 hover:text-white shadow-sm hover:bg-slate-800 transition cursor-pointer"
+              className="w-7 h-7 rounded-lg bg-slate-900/90 border border-slate-700/80 flex items-center justify-center text-slate-400 hover:text-white shadow-sm hover:bg-slate-800 transition-all duration-150 active:scale-90 cursor-pointer"
               title="Reset Zoom"
             >
               <RotateCcw className="w-3 h-3" />
             </button>
           </div>
 
-          {/* Cadastral Vector Polygon Map with Smooth Zoom */}
+          {/* Cadastral Vector Polygon Map with Smooth Zoom Transition */}
           <div
             className="w-full h-full flex items-center justify-center transition-transform duration-300 ease-out"
             style={{ transform: `scale(${zoomLevel})` }}
@@ -182,14 +180,15 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
               {/* Polygon 1: Gut 104/1A */}
               <g
                 onClick={() => handleSelect(parcels[0])}
-                className="cursor-pointer transition-transform hover:scale-[1.01]"
+                className="cursor-pointer transition-all duration-200 hover:opacity-95"
               >
                 <polygon
                   points="80,110 190,100 180,210 70,190"
                   fill={getPolygonFill(parcels[0] || {}, activeParcel?.gutNo === '104/1A')}
-                  fillOpacity={activeParcel?.gutNo === '104/1A' ? 0.92 : 0.65}
+                  fillOpacity={activeParcel?.gutNo === '104/1A' ? 0.95 : 0.65}
                   stroke={activeParcel?.gutNo === '104/1A' ? '#FDE047' : 'rgba(255,255,255,0.3)'}
-                  strokeWidth={activeParcel?.gutNo === '104/1A' ? 3 : 1}
+                  strokeWidth={activeParcel?.gutNo === '104/1A' ? 3.5 : 1}
+                  className="transition-all duration-300"
                 />
                 <text x="105" y="155" fill="#FFFFFF" fontSize="11" fontWeight="bold" fontFamily="monospace">
                   Gut 104/1A
@@ -202,14 +201,15 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
               {/* Polygon 2: Gut 104/1B */}
               <g
                 onClick={() => handleSelect(parcels[1])}
-                className="cursor-pointer transition-transform hover:scale-[1.01]"
+                className="cursor-pointer transition-all duration-200 hover:opacity-95"
               >
                 <polygon
                   points="190,100 290,120 280,225 180,210"
                   fill={getPolygonFill(parcels[1] || {}, activeParcel?.gutNo === '104/1B')}
-                  fillOpacity={activeParcel?.gutNo === '104/1B' ? 0.92 : 0.6}
+                  fillOpacity={activeParcel?.gutNo === '104/1B' ? 0.95 : 0.6}
                   stroke={activeParcel?.gutNo === '104/1B' ? '#FDE047' : 'rgba(255,255,255,0.3)'}
-                  strokeWidth={activeParcel?.gutNo === '104/1B' ? 3 : 1}
+                  strokeWidth={activeParcel?.gutNo === '104/1B' ? 3.5 : 1}
+                  className="transition-all duration-300"
                 />
                 <text x="210" y="160" fill="#FFFFFF" fontSize="11" fontWeight="bold" fontFamily="monospace">
                   Gut 104/1B
@@ -222,14 +222,15 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
               {/* Polygon 3: Gut 105/2 */}
               <g
                 onClick={() => handleSelect(parcels[2])}
-                className="cursor-pointer transition-transform hover:scale-[1.01]"
+                className="cursor-pointer transition-all duration-200 hover:opacity-95"
               >
                 <polygon
                   points="290,120 400,105 390,220 280,225"
                   fill={getPolygonFill(parcels[2] || {}, activeParcel?.gutNo === '105/2')}
-                  fillOpacity={activeParcel?.gutNo === '105/2' ? 0.92 : 0.65}
+                  fillOpacity={activeParcel?.gutNo === '105/2' ? 0.95 : 0.65}
                   stroke={activeParcel?.gutNo === '105/2' ? '#FDE047' : 'rgba(255,255,255,0.3)'}
-                  strokeWidth={activeParcel?.gutNo === '105/2' ? 3 : 1}
+                  strokeWidth={activeParcel?.gutNo === '105/2' ? 3.5 : 1}
+                  className="transition-all duration-300"
                 />
                 <text x="315" y="165" fill="#FFFFFF" fontSize="11" fontWeight="bold" fontFamily="monospace">
                   Gut 105/2
@@ -242,14 +243,15 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
               {/* Polygon 4: Gut 106/3 */}
               <g
                 onClick={() => handleSelect(parcels[3])}
-                className="cursor-pointer transition-transform hover:scale-[1.01]"
+                className="cursor-pointer transition-all duration-200 hover:opacity-95"
               >
                 <polygon
                   points="400,105 490,115 480,230 390,220"
                   fill={getPolygonFill(parcels[3] || {}, activeParcel?.gutNo === '106/3')}
-                  fillOpacity={activeParcel?.gutNo === '106/3' ? 0.92 : 0.6}
+                  fillOpacity={activeParcel?.gutNo === '106/3' ? 0.95 : 0.6}
                   stroke={activeParcel?.gutNo === '106/3' ? '#FDE047' : 'rgba(255,255,255,0.3)'}
-                  strokeWidth={activeParcel?.gutNo === '106/3' ? 3 : 1}
+                  strokeWidth={activeParcel?.gutNo === '106/3' ? 3.5 : 1}
+                  className="transition-all duration-300"
                 />
                 <text x="415" y="165" fill="#FFFFFF" fontSize="11" fontWeight="bold" fontFamily="monospace">
                   Gut 106/3
@@ -262,14 +264,15 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
               {/* Polygon 5: Gut 107/1 */}
               <g
                 onClick={() => handleSelect(parcels[4])}
-                className="cursor-pointer transition-transform hover:scale-[1.01]"
+                className="cursor-pointer transition-all duration-200 hover:opacity-95"
               >
                 <polygon
                   points="490,115 570,130 560,240 480,230"
                   fill={getPolygonFill(parcels[4] || {}, activeParcel?.gutNo === '107/1')}
-                  fillOpacity={activeParcel?.gutNo === '107/1' ? 0.92 : 0.6}
+                  fillOpacity={activeParcel?.gutNo === '107/1' ? 0.95 : 0.6}
                   stroke={activeParcel?.gutNo === '107/1' ? '#FDE047' : 'rgba(255,255,255,0.3)'}
-                  strokeWidth={activeParcel?.gutNo === '107/1' ? 3 : 1}
+                  strokeWidth={activeParcel?.gutNo === '107/1' ? 3.5 : 1}
+                  className="transition-all duration-300"
                 />
                 <text x="500" y="175" fill="#FFFFFF" fontSize="11" fontWeight="bold" fontFamily="monospace">
                   Gut 107/1
@@ -287,9 +290,9 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
         </div>
 
         {/* Right Inspector Drawer */}
-        <div className="w-full md:w-80 bg-[#080D1A] border-t md:border-t-0 md:border-l border-slate-800/80 p-4 flex flex-col justify-between text-xs">
+        <div className="w-full md:w-80 bg-[#080D1A] border-t md:border-t-0 md:border-l border-slate-800/80 p-4 flex flex-col justify-between text-xs transition-all duration-300">
           {activeParcel ? (
-            <div className="space-y-3">
+            <div className="space-y-3 animate-view-fade-in">
               <div className="flex items-start justify-between pb-2.5 border-b border-slate-800">
                 <div>
                   <span className="text-[10px] font-mono text-[#F97316] font-bold uppercase tracking-wider">
@@ -299,7 +302,7 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel }) {
                     Gut No. {activeParcel.gutNo}
                   </div>
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full font-mono ${
+                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono transition-all duration-200 ${
                   activeParcel.riskScore >= 70
                     ? 'bg-rose-950 text-rose-300 border border-rose-800'
                     : activeParcel.riskScore >= 40
