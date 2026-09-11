@@ -4,34 +4,70 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply bg-[#F8FAFC] text-slate-900;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
-/* Custom crisp scrollbars for dense data grids */
+/* Custom sleek scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Gauge animation & gradient styles */
-.gauge-glow-high {
-  filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.35));
+/* Modern Range Slider Styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
 }
-.gauge-glow-med {
-  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.35));
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: #e2e8f0;
 }
-.gauge-glow-low {
-  filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.35));
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #1e3a8a;
+  border: 3px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  margin-top: -6px;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  background: #f97316;
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+/* Gauge Glows & Ambient Drops */
+.glow-red {
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
+}
+.glow-amber {
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.4));
+}
+.glow-emerald {
+  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
 }

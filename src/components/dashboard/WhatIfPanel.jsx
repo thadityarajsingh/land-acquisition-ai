@@ -57,27 +57,23 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] p-5 hover:shadow-md transition-shadow">
       
-      <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-100">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-orange-50 text-[#F97316]">
-            <Sliders className="w-4 h-4" />
-          </div>
-          <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-              Policy & Operational What-If Simulator
-            </h2>
-            <p className="text-xs text-slate-500">
-              Simulate compensatory interventions & legal settlements to de-risk timeline
-            </p>
-          </div>
+      {/* Header */}
+      <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            Interactive Policy Simulator
+          </span>
+          <h2 className="text-sm font-bold text-slate-800">
+            De-Risking Simulation Studio
+          </h2>
         </div>
 
         <button
           type="button"
           onClick={handleReset}
-          className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 font-medium transition"
+          className="text-xs text-slate-400 hover:text-slate-700 flex items-center gap-1 font-medium transition cursor-pointer"
           title="Reset to statutory baseline"
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -85,37 +81,40 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
         </button>
       </div>
 
-      {/* Quick Scenario Presets */}
-      <div className="mb-4 bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex flex-wrap items-center justify-between gap-2">
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-          <Zap className="w-3 h-3 text-[#F97316]" />
+      {/* Preset Chips */}
+      <div className="my-3.5 bg-slate-50 p-2 rounded-xl border border-slate-200/60 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 pl-1">
+          <Zap className="w-3.5 h-3.5 text-[#F97316]" />
           Demo Presets:
         </span>
         <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => applyPreset('lok_adalat')}
-            className="text-[11px] px-2 py-1 rounded bg-white hover:bg-blue-50 text-slate-700 hover:text-[#1E3A8A] font-semibold border border-slate-300 transition"
+            className="text-[11px] px-2.5 py-1 rounded-lg bg-white hover:bg-blue-50/60 text-slate-700 hover:text-[#1E3A8A] font-semibold border border-slate-200 shadow-xs transition cursor-pointer"
           >
             Pre-Lok Adalat (1.35x)
           </button>
           <button
             type="button"
             onClick={() => applyPreset('fast')}
-            className="text-[11px] px-2 py-1 rounded bg-orange-500 hover:bg-orange-600 text-white font-bold transition shadow-xs"
+            className="text-[11px] px-2.5 py-1 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white font-bold transition shadow-xs cursor-pointer"
           >
             Fast Corridor (1.75x)
           </button>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Sliders Form */}
+      <form onSubmit={handleSubmit} className="space-y-3.5">
         
         {/* Slider 1: Compensation Multiplier */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <div className="flex justify-between text-xs font-semibold text-slate-700">
             <span>Land Compensation Multiplier:</span>
-            <span className="font-mono text-[#F97316] font-bold">{Number(compensationMultiplier).toFixed(2)}x Circle Rate</span>
+            <span className="font-mono text-[#F97316] font-bold text-[11px] bg-orange-50 px-2 py-0.5 rounded border border-orange-200/60">
+              {Number(compensationMultiplier).toFixed(2)}x Circle Rate
+            </span>
           </div>
           <input
             type="range"
@@ -124,20 +123,22 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
             step="0.05"
             value={compensationMultiplier}
             onChange={(e) => setCompensationMultiplier(e.target.value)}
-            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#F97316]"
+            className="w-full"
           />
-          <div className="flex justify-between text-[10px] text-slate-400">
-            <span>1.0x (Standard Ready Reckoner)</span>
-            <span>1.75x (Amicable Consensus)</span>
-            <span>2.5x (Fast Acquisition Cap)</span>
+          <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+            <span>1.0x (Ready Reckoner)</span>
+            <span>1.75x (Consensus)</span>
+            <span>2.5x (Cap)</span>
           </div>
         </div>
 
-        {/* Slider 2: Survey Completion % */}
-        <div className="space-y-1.5">
+        {/* Slider 2: Survey Progress */}
+        <div className="space-y-1">
           <div className="flex justify-between text-xs font-semibold text-slate-700">
-            <span>Joint Measurement Survey (JMS) Progress:</span>
-            <span className="font-mono text-blue-700 font-bold">{surveyCompletionPct}% Verified</span>
+            <span>Joint Measurement Survey (JMS):</span>
+            <span className="font-mono text-blue-700 font-bold text-[11px] bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
+              {surveyCompletionPct}% Verified
+            </span>
           </div>
           <input
             type="range"
@@ -146,20 +147,22 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
             step="1"
             value={surveyCompletionPct}
             onChange={(e) => setSurveyCompletionPct(e.target.value)}
-            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#1E3A8A]"
+            className="w-full"
           />
-          <div className="flex justify-between text-[10px] text-slate-400">
-            <span>30% (Early Delays)</span>
-            <span>58% (Current Baseline)</span>
-            <span>100% (Cadastral Demarcated)</span>
+          <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+            <span>30% (Early Stage)</span>
+            <span>58% (Baseline)</span>
+            <span>100% (Completed)</span>
           </div>
         </div>
 
-        {/* Slider 3: Active Litigation Writs */}
-        <div className="space-y-1.5">
+        {/* Slider 3: Litigations */}
+        <div className="space-y-1">
           <div className="flex justify-between text-xs font-semibold text-slate-700">
-            <span>Active High Court Stay Orders / Writs:</span>
-            <span className="font-mono text-rose-600 font-bold">{litigationCases} Pending Petitions</span>
+            <span>Active High Court Writs:</span>
+            <span className="font-mono text-rose-600 font-bold text-[11px] bg-rose-50 px-2 py-0.5 rounded border border-rose-200/60">
+              {litigationCases} Petitions
+            </span>
           </div>
           <input
             type="range"
@@ -168,52 +171,30 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
             step="1"
             value={litigationCases}
             onChange={(e) => setLitigationCases(e.target.value)}
-            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-rose-500"
+            className="w-full"
           />
-          <div className="flex justify-between text-[10px] text-slate-400">
-            <span>0 (Lok Adalat Full Settlement)</span>
-            <span>7 (Current Injunctions)</span>
-            <span>10 (Severe Gridlock)</span>
+          <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+            <span>0 (Fully Settled)</span>
+            <span>7 (Current Writs)</span>
+            <span>10 (Gridlock)</span>
           </div>
         </div>
 
-        {/* Slider 4: Solatium Top-Up */}
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-xs font-semibold text-slate-700">
-            <span>Ex-Gratia Solatium Incentive:</span>
-            <span className="font-mono text-emerald-700 font-bold">+{solatiumTopUpPct}% Incentive</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="30"
-            step="5"
-            value={solatiumTopUpPct}
-            onChange={(e) => setSolatiumTopUpPct(e.target.value)}
-            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
-          />
-          <div className="flex justify-between text-[10px] text-slate-400">
-            <span>0% (Statutory 100%)</span>
-            <span>15% (Special Package)</span>
-            <span>30% (High Priority Corridor)</span>
-          </div>
-        </div>
-
-        {/* Action Button: Saffron Theme (#F97316) */}
+        {/* Action Button */}
         <div className="pt-2">
           <button
             type="submit"
             disabled={simulating}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-sm shadow-sm hover:shadow transition disabled:opacity-60 cursor-pointer active:scale-98"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#F97316] to-[#EA580C] hover:from-[#EA580C] hover:to-[#C2410C] text-white font-bold text-xs shadow-sm hover:shadow transition disabled:opacity-60 cursor-pointer active:scale-98"
           >
             {simulating ? (
               <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Running Simulation Engine...</span>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Simulating Scenario...</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-3.5 h-3.5" />
                 <span>Run What-If Simulation</span>
               </>
             )}
