@@ -6,11 +6,14 @@ pipeline, so baseline and scenario results stay comparable (per SRS 4.4).
 """
 
 import joblib
+import xgboost
 import pandas as pd
 from preprocess import NUMERIC_FEATURES, CATEGORICAL_FEATURES
 
 _pipeline = joblib.load("model/pipeline.joblib")
-_model = joblib.load("model/model.joblib")
+
+_model = xgboost.XGBClassifier()
+_model.load_model("model/model.json")
 
 # Lowered from the default 0.5 to 0.3 — tested thresholds 0.5 down to 0.25
 # on the held-out test set; 0.3 gave the best F1 (0.43) while nearly doubling
