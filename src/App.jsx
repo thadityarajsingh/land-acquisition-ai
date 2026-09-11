@@ -7,6 +7,7 @@ import { LoginPage } from "./components/auth/LoginPage";
 import { useProjects } from "./hooks/useProjects";
 import { usePredict } from "./hooks/usePredict";
 import { useWhatIf } from "./hooks/useWhatIf";
+import { PanelLeft } from "lucide-react";
 
 export function App() {
   // Authentication session state with localStorage persistence
@@ -16,6 +17,16 @@ export function App() {
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
+    }
+  });
+
+  // Sidebar slide popup & pin mode state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarPinned, setIsSidebarPinned] = useState(() => {
+    try {
+      return localStorage.getItem("bhoomiiq_sidebar_pinned") === "true";
+    } catch {
+      return false;
     }
   });
 
@@ -60,6 +71,22 @@ export function App() {
     }
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
+
+  const toggleSidebarPin = () => {
+    setIsSidebarPinned((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("bhoomiiq_sidebar_pinned", String(next));
+      } catch (err) {
+        console.error("Failed to save sidebar pin state", err);
+      }
+      return next;
+    });
+  };
+
   // If officer is not authenticated, render Login Page
   if (!currentUser) {
     return <LoginPage onLogin={handleLogin} />;
@@ -68,7 +95,7 @@ export function App() {
   const isLoading = projectsLoading || predictionLoading;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans relative">
       <TopNav
         projects={projects}
         selectedProjectId={selectedProjectId}
@@ -80,14 +107,36 @@ export function App() {
         onSearchChange={setSearchQuery}
         currentUser={currentUser}
         onLogout={handleLogout}
+        onToggleSidebar={toggleSidebar}
+        isSidebarOpen={isSidebarOpen}
+        isSidebarPinned={isSidebarPinned}
       />
 
-      <div className="flex flex-1 overflow-hidden">
+      {/* Floating Edge Trigger when sidebar is closed in slide mode */}
+      {!isSidebarPinned && !isSidebarOpen && (
+        <button
+          type="button"
+          onClick={() => setIsSidebarOpen(true)}
+          className="fixed left-0 top-1/2 -translate-y-1/2 bg-[#080D1A] hover:bg-slate-800 text-slate-400 hover:text-white border border-l-0 border-slate-700/80 px-1.5 py-3.5 rounded-r-xl shadow-xl z-30 transition-all duration-150 group flex flex-col items-center gap-1.5 cursor-pointer hover:pl-2"
+          title="Open Statutory Modules (Slide Panel)"
+        >
+          <PanelLeft className="w-4 h-4 text-[#F97316] group-hover:scale-110 transition" />
+          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 [writing-mode:vertical-rl] rotate-180">
+            Modules
+          </span>
+        </button>
+      )}
+
+      <div className="flex flex-1 overflow-hidden relative">
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           projectData={projectData}
           currentUser={currentUser}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          isPinned={isSidebarPinned}
+          onTogglePin={toggleSidebarPin}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F8FAFC]">

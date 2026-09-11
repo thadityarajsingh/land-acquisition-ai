@@ -10,7 +10,9 @@ import {
   AlertCircle,
   LogOut,
   User,
-  Fingerprint
+  Fingerprint,
+  PanelLeft,
+  Menu
 } from 'lucide-react';
 
 export function TopNav({
@@ -20,7 +22,10 @@ export function TopNav({
   searchQuery = '',
   onSearchChange,
   currentUser,
-  onLogout
+  onLogout,
+  onToggleSidebar,
+  isSidebarOpen = false,
+  isSidebarPinned = false
 }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -74,8 +79,24 @@ export function TopNav({
     <header className="bg-[#0A1120] border-b border-slate-800/80 text-white sticky top-0 z-40 px-4 sm:px-6 py-2.5 shadow-sm backdrop-blur-md">
       <div className="max-w-[1720px] mx-auto flex items-center justify-between gap-4">
         
-        {/* Brand & Gov Identity */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Brand & Gov Identity with Sidebar Toggle */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {onToggleSidebar && (
+            <button
+              type="button"
+              onClick={onToggleSidebar}
+              className={`p-1.5 rounded-lg border transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
+                isSidebarOpen || isSidebarPinned
+                  ? 'bg-[#F97316]/20 border-[#F97316]/50 text-[#F97316] shadow-sm shadow-orange-500/10'
+                  : 'bg-slate-900/90 hover:bg-slate-800 border-slate-700/80 text-slate-300 hover:text-white'
+              }`}
+              title={isSidebarOpen ? "Close Modules Menu" : "Open Modules Menu (Slide Panel)"}
+            >
+              <PanelLeft className="w-4 h-4 text-[#F97316]" />
+              <span className="text-xs font-semibold text-slate-200 hidden sm:inline">Modules</span>
+            </button>
+          )}
+
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-[#1E3A8A] border border-blue-400/30 flex items-center justify-center text-white font-black tracking-wider shadow-sm">
             <span className="text-[#F97316] text-lg">B</span>
           </div>
