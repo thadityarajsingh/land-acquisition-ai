@@ -28,7 +28,6 @@ export function TopNav({
   onLogout,
   onToggleSidebar,
   isSidebarOpen = false,
-  isSidebarPinned = false,
   onSelectTab,
   onReturnToTop
 }) {
@@ -112,13 +111,13 @@ export function TopNav({
               type="button"
               onClick={onToggleSidebar}
               className={`p-1.5 rounded-lg border transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
-                isSidebarOpen || isSidebarPinned
+                isSidebarOpen
                   ? 'bg-white text-[#EA580C] border-white shadow-md font-bold'
                   : 'bg-black/20 hover:bg-black/30 border-white/25 text-white'
               }`}
-              title={isSidebarOpen ? "Close Modules Menu" : "Open Modules Menu (Slide Panel)"}
+              title={isSidebarOpen ? "Close Modules (Sliding Window)" : "Open Modules (Sliding Window)"}
             >
-              <PanelLeft className={`w-4 h-4 ${isSidebarOpen || isSidebarPinned ? 'text-[#EA580C]' : 'text-white'}`} />
+              <PanelLeft className={`w-4 h-4 ${isSidebarOpen ? 'text-[#EA580C]' : 'text-white'}`} />
               <span className="text-xs font-semibold hidden sm:inline">Modules</span>
             </button>
           )}

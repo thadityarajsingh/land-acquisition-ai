@@ -20,15 +20,17 @@ export function App() {
     }
   });
 
-  // Sidebar slide popup & pin mode state
+  // Sidebar sliding window drawer state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarPinned, setIsSidebarPinned] = useState(() => {
+
+  // Clear any legacy pinned preference so left panel is always a sliding window
+  React.useEffect(() => {
     try {
-      return localStorage.getItem("bhoomiiq_sidebar_pinned") === "true";
+      localStorage.removeItem("bhoomiiq_sidebar_pinned");
     } catch {
-      return false;
+      // ignore
     }
-  });
+  }, []);
 
   const [activeTab, setActiveTab] = useState("cadastral");
   const [searchQuery, setSearchQuery] = useState("");
@@ -75,18 +77,6 @@ export function App() {
     setIsSidebarOpen((prev) => !prev);
   };
 
-  const toggleSidebarPin = () => {
-    setIsSidebarPinned((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("bhoomiiq_sidebar_pinned", String(next));
-      } catch (err) {
-        console.error("Failed to save sidebar pin state", err);
-      }
-      return next;
-    });
-  };
-
   // If officer is not authenticated, render Login Page
   if (!currentUser) {
     return <LoginPage onLogin={handleLogin} />;
@@ -109,7 +99,6 @@ export function App() {
         onLogout={handleLogout}
         onToggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
-        isSidebarPinned={isSidebarPinned}
         onSelectTab={setActiveTab}
         onReturnToTop={() => {
           setActiveTab("cadastral");
@@ -119,13 +108,13 @@ export function App() {
         }}
       />
 
-      {/* Floating Edge Trigger when sidebar is closed in slide mode */}
-      {!isSidebarPinned && !isSidebarOpen && (
+      {/* Floating Edge Trigger to open sliding window */}
+      {!isSidebarOpen && (
         <button
           type="button"
           onClick={() => setIsSidebarOpen(true)}
           className="fixed left-0 top-1/2 -translate-y-1/2 bg-[#080D1A] hover:bg-slate-800 text-slate-400 hover:text-white border border-l-0 border-slate-700/80 px-1.5 py-3.5 rounded-r-xl shadow-xl z-30 transition-all duration-150 group flex flex-col items-center gap-1.5 cursor-pointer hover:pl-2"
-          title="Open Statutory Modules (Slide Panel)"
+          title="Open Modules (Sliding Window)"
         >
           <PanelLeft className="w-4 h-4 text-[#F97316] group-hover:scale-110 transition" />
           <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 [writing-mode:vertical-rl] rotate-180">
@@ -142,8 +131,6 @@ export function App() {
           currentUser={currentUser}
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
-          isPinned={isSidebarPinned}
-          onTogglePin={toggleSidebarPin}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F8FAFC]">

@@ -8,8 +8,6 @@ import {
   History, 
   Building2,
   X,
-  Pin,
-  PinOff,
   Shield,
   Layers,
   ChevronRight,
@@ -22,9 +20,7 @@ export function Sidebar({
   projectData,
   currentUser,
   isOpen = false,
-  onClose,
-  isPinned = false,
-  onTogglePin
+  onClose
 }) {
   const navItems = [
     {
@@ -72,21 +68,20 @@ export function Sidebar({
     },
   ];
 
-  // Close on Escape key when open in slide popup mode
+  // Close on Escape key when open in sliding drawer mode
   useEffect(() => {
     function handleKeyDown(e) {
-      if (e.key === 'Escape' && isOpen && !isPinned && onClose) {
+      if (e.key === 'Escape' && isOpen && onClose) {
         onClose();
       }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, isPinned, onClose]);
+  }, [isOpen, onClose]);
 
   const handleSelectTab = (tabId) => {
     setActiveTab(tabId);
-    // Auto-close slide popup on mobile or when unpinned
-    if (!isPinned && onClose) {
+    if (onClose) {
       onClose();
     }
   };
@@ -98,8 +93,8 @@ export function Sidebar({
   const panelContent = (
     <div className="flex flex-col h-full bg-[#080D1A] text-slate-300 select-none">
       
-      {/* Top Header of Sidebar */}
-      <div className="px-4 py-3.5 border-b border-slate-800/80 flex items-center justify-between gap-2 shrink-0 bg-slate-900/40">
+      {/* Top Header of Sliding Window */}
+      <div className="px-4 py-3.5 border-b border-slate-800/80 flex items-center justify-between gap-2 shrink-0 bg-slate-900/50">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-[#1E3A8A] flex items-center justify-center text-white text-xs font-black shadow-sm">
             <span className="text-[#F97316]">B</span>
@@ -112,34 +107,17 @@ export function Sidebar({
           </div>
         </div>
 
-        {/* Controls: Pin & Close */}
-        <div className="flex items-center gap-1">
-          {onTogglePin && (
-            <button
-              type="button"
-              onClick={onTogglePin}
-              className={`p-1.5 rounded-lg border transition ${
-                isPinned
-                  ? 'bg-[#F97316]/15 border-[#F97316]/40 text-[#F97316]'
-                  : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:text-slate-200'
-              }`}
-              title={isPinned ? "Unpin (Enable slide popup mode)" : "Pin to screen (Header to Footer)"}
-            >
-              {isPinned ? <Pin className="w-3.5 h-3.5" /> : <PinOff className="w-3.5 h-3.5" />}
-            </button>
-          )}
-
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-400 hover:text-white transition"
-              title="Close Menu"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+        {/* Close Button */}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 text-slate-400 hover:text-white transition cursor-pointer"
+            title="Close Modules (Esc)"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Jurisdiction & Active Corridor Pill */}
@@ -242,16 +220,7 @@ export function Sidebar({
     </div>
   );
 
-  // 1. PINNED DOCKED MODE (Header to Footer docked alongside dashboard)
-  if (isPinned) {
-    return (
-      <aside className="w-72 sm:w-80 bg-[#080D1A] border-r border-slate-800/80 text-slate-300 flex flex-col shrink-0 h-[calc(100vh-53px)] sticky top-[53px] z-30 transition-all duration-200">
-        {panelContent}
-      </aside>
-    );
-  }
-
-  // 2. SLIDE POPUP / DRAWER OVERLAY MODE
+  // ALWAYS SLIDING WINDOW (DRAWER OVERLAY FROM HEADER TO FOOTER)
   return (
     <>
       {/* Backdrop overlay */}
@@ -263,7 +232,7 @@ export function Sidebar({
         />
       )}
 
-      {/* Slide Drawer Panel (from Header to Footer full height) */}
+      {/* Sliding Window Drawer (from Header to Footer full height) */}
       <aside
         className={`fixed top-0 left-0 bottom-0 w-80 bg-[#080D1A] z-50 border-r border-slate-800 shadow-2xl transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -277,4 +246,5 @@ export function Sidebar({
 }
 
 export default Sidebar;
+
 
