@@ -7,10 +7,10 @@ import shap
 from ml.preprocess import NUMERIC_FEATURES, CATEGORICAL_FEATURES
 
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+ROOT_DIR = Path(__file__).resolve().parents[2]
 
-PIPELINE_PATH = BASE_DIR / "models" / "pipeline.joblib"
-MODEL_PATH = BASE_DIR / "models" / "model.joblib"
+PIPELINE_PATH = ROOT_DIR / "ml" / "model" / "pipeline.joblib"
+MODEL_PATH = ROOT_DIR / "ml" / "model" / "model.joblib"
 
 _pipeline = joblib.load(PIPELINE_PATH)
 _model = joblib.load(MODEL_PATH)
@@ -35,8 +35,8 @@ def _feature_names_after_encoding():
 
 def explain_single_prediction(features: dict, top_n: int = 5) -> dict:
     row = pd.DataFrame(
-        [features],
-        columns=NUMERIC_FEATURES + CATEGORICAL_FEATURES
+        [{column: features.get(column) for column in NUMERIC_FEATURES + CATEGORICAL_FEATURES}],
+        columns=NUMERIC_FEATURES + CATEGORICAL_FEATURES,
     )
 
     row_transformed = _pipeline.transform(row)
