@@ -7,9 +7,7 @@ import { ComparisonView } from './ComparisonView';
 import { MitigationProtocols } from './MitigationProtocols';
 import { CorridorView } from './CorridorView';
 import { DisputesView } from './DisputesView';
-import { AuditTrailView } from './AuditTrailView';
-import { MapPin, Clock, AlertTriangle, ShieldCheck, Layers, IndianRupee } from 'lucide-react';
-import { formatINR } from '../../lib/utils';
+import { MapPin, Clock, Layers, IndianRupee } from 'lucide-react';
 
 export function Dashboard({ activeTab = 'cadastral', setActiveTab, projectData, prediction, recommendations = [], whatIfResult, onRunSimulation, simulating, onResetSimulation, searchQuery = '' }) {
   const [selectedParcel, setSelectedParcel] = useState(null);
@@ -26,6 +24,11 @@ export function Dashboard({ activeTab = 'cadastral', setActiveTab, projectData, 
 
   const currentRiskScore = whatIfResult ? whatIfResult.simulatedScore : (prediction?.riskScore ?? projectData?.riskScore ?? 82);
   const currentDrivers = whatIfResult?.updatedDrivers || prediction?.drivers || projectData?.drivers || [];
+  const currentEstimatedDelay = whatIfResult
+    ? whatIfResult.simulatedDelay
+    : prediction?.risk_score != null
+      ? `${Math.round(Number(prediction.risk_score) * 180)} model-estimated days`
+      : null;
 
   return (
     <div className="space-y-5 animate-view-fade-in">
@@ -53,7 +56,7 @@ export function Dashboard({ activeTab = 'cadastral', setActiveTab, projectData, 
         <div className="space-y-5 animate-view-fade-in">
           <section className="card-hover rounded-2xl"><CadastralMap parcels={filteredParcels.length > 0 ? filteredParcels : projectData?.parcels || []} selectedGut={selectedParcel?.gutNo} onSelectParcel={setSelectedParcel} projectData={projectData} /></section>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            <div className="lg:col-span-5 space-y-5"><div className="card-hover rounded-2xl"><RiskScoreCard score={currentRiskScore} projectData={projectData} simulationDelta={whatIfResult ? whatIfResult.scoreDelta : null} /></div><div className="card-hover rounded-2xl"><RiskDrivers drivers={currentDrivers} /></div></div>
+            <div className="lg:col-span-5 space-y-5"><div className="card-hover rounded-2xl"><RiskScoreCard score={currentRiskScore} projectData={projectData} simulationDelta={whatIfResult ? whatIfResult.scoreDelta : null} estimatedDelay={currentEstimatedDelay} /></div><div className="card-hover rounded-2xl"><RiskDrivers drivers={currentDrivers} /></div></div>
             <div className="lg:col-span-7 space-y-5"><div className="card-hover rounded-2xl"><WhatIfPanel defaults={projectData?.simulationDefaults || {}} onRunSimulation={onRunSimulation} simulating={simulating} onReset={onResetSimulation} /></div><div className="card-hover rounded-2xl"><ComparisonView baseline={projectData} simulation={whatIfResult} /></div></div>
           </div>
           <section className="card-hover rounded-2xl"><MitigationProtocols recommendations={recommendations} projectData={projectData} /></section>
@@ -61,7 +64,7 @@ export function Dashboard({ activeTab = 'cadastral', setActiveTab, projectData, 
       )}
       {activeTab === 'corridor' && <div className="animate-view-fade-in"><CorridorView projectData={projectData} onSelectParcel={(parcel) => { setSelectedParcel(parcel); if (setActiveTab) setActiveTab('cadastral'); }} /></div>}
       {activeTab === 'disputes' && <div className="animate-view-fade-in"><DisputesView projectData={projectData} /></div>}
-      {activeTab === 'whatif' && <div className="space-y-5 animate-view-fade-in"><div className="grid grid-cols-1 lg:grid-cols-12 gap-5"><div className="lg:col-span-6 space-y-5"><div className="card-hover rounded-2xl"><WhatIfPanel defaults={projectData?.simulationDefaults || {}} onRunSimulation={onRunSimulation} simulating={simulating} onReset={onResetSimulation} /></div><div className="card-hover rounded-2xl"><RiskDrivers drivers={currentDrivers} /></div></div><div className="lg:col-span-6 space-y-5"><div className="card-hover rounded-2xl"><ComparisonView baseline={projectData} simulation={whatIfResult} /></div><div className="card-hover rounded-2xl"><RiskScoreCard score={currentRiskScore} projectData={projectData} simulationDelta={whatIfResult ? whatIfResult.scoreDelta : null} /></div></div></div></div>}
+      {activeTab === 'whatif' && <div className="space-y-5 animate-view-fade-in"><div className="grid grid-cols-1 lg:grid-cols-12 gap-5"><div className="lg:col-span-6 space-y-5"><div className="card-hover rounded-2xl"><WhatIfPanel defaults={projectData?.simulationDefaults || {}} onRunSimulation={onRunSimulation} simulating={simulating} onReset={onResetSimulation} /></div><div className="card-hover rounded-2xl"><RiskDrivers drivers={currentDrivers} /></div></div><div className="lg:col-span-6 space-y-5"><div className="card-hover rounded-2xl"><ComparisonView baseline={projectData} simulation={whatIfResult} /></div><div className="card-hover rounded-2xl"><RiskScoreCard score={currentRiskScore} projectData={projectData} simulationDelta={whatIfResult ? whatIfResult.scoreDelta : null} estimatedDelay={currentEstimatedDelay} /></div></div></div></div>}
     </div>
   );
 }
