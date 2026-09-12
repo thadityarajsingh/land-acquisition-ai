@@ -10,14 +10,14 @@ function hasValidCoordinates(project) {
 function fallbackCoordinates(project) {
   const centers = {
     'Uttar Pradesh': [26.85, 80.95],
-    'Maharashtra': [19.75, 75.70],
-    'Karnataka': [15.30, 75.70],
+    Maharashtra: [19.75, 75.70],
+    Karnataka: [15.30, 75.70],
     'Tamil Nadu': [11.00, 78.30],
-    'Gujarat': [22.30, 71.80],
-    'Rajasthan': [27.00, 74.20],
+    Gujarat: [22.30, 71.80],
+    Rajasthan: [27.00, 74.20],
     'Madhya Pradesh': [23.50, 78.00],
-    'Bihar': [25.80, 85.30],
-    'Odisha': [20.20, 84.40],
+    Bihar: [25.80, 85.30],
+    Odisha: [20.20, 84.40],
     'West Bengal': [23.00, 87.80],
   };
   return centers[project?.state] || [22.50, 78.90];
@@ -48,9 +48,6 @@ function riskColor(score) {
 
 function buildParcelGeometry(center, count = 6) {
   const [lat, lng] = center;
-  const cosLat = Math.max(0.35, Math.cos((lat * Math.PI) / 180));
-  const sx = 0.0042 / cosLat;
-  const sy = 0.0027;
   const templates = [
     [[-0.0029, -0.0042], [-0.0024, -0.0012], [0.0001, -0.0014], [0.0005, -0.0040]],
     [[-0.0024, -0.0011], [-0.0025, 0.0012], [0.0004, 0.0014], [0.0001, -0.0014]],
@@ -61,7 +58,7 @@ function buildParcelGeometry(center, count = 6) {
   ];
   return templates.slice(0, count).map((points, index) => ({
     id: `Prototype-${String.fromCharCode(65 + index)}`,
-    positions: points.map(([y, x]) => [lat + y * sy / 0.0027, lng + x * sx / 0.0042]),
+    positions: points.map(([dy, dx]) => [lat + dy, lng + dx]),
   }));
 }
 
@@ -167,7 +164,6 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     const map = mapInstance.current;
     const L = window.L;
     if (!map || !L || !L.MarkerClusterGroup) return;
-
     if (projectLayerRef.current) {
       projectLayerRef.current.clearLayers();
       if (map.hasLayer(projectLayerRef.current)) map.removeLayer(projectLayerRef.current);
@@ -194,7 +190,6 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       const offset = duplicateIndex === 0
         ? [lat, lng]
         : [lat + Math.cos(duplicateIndex * 2.4) * 0.0025, lng + Math.sin(duplicateIndex * 2.4) * 0.0025];
-
       const score = riskScore(project, selectedProjectId, selectedRisk);
       const color = riskColor(score);
       const selected = id === selectedProjectId;
@@ -205,7 +200,6 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
         fillOpacity: 0.95,
         weight: selected ? 3 : 2,
       });
-
       marker.bindPopup(`
         <div style="min-width:205px;font-family:Arial,sans-serif;font-size:13px;line-height:1.55">
           <div style="font-size:15px;font-weight:700;margin-bottom:8px">${id ?? 'Project'}</div>
@@ -220,7 +214,6 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       marker.on('click', () => onSelectProject?.(id));
       layer.addLayer(marker);
     });
-
     projectLayerRef.current = layer;
     map.addLayer(layer);
   }, [projects, selectedProjectId, selectedRisk, showProjects, onSelectProject]);
@@ -240,8 +233,8 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
 
     const baseline = Number.isFinite(Number(baselineRisk)) ? Number(baselineRisk) : selectedScore;
     const simulated = Number.isFinite(Number(selectedRisk)) ? Number(selectedRisk) : baseline;
-    const layers = [];
     const projectColor = riskColor(simulated);
+    const layers = [];
 
     parcelGeometry.forEach((shape, index) => {
       const parcel = parcels[index] || {};
@@ -252,12 +245,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
         fillOpacity: index === 0 ? 0.20 : 0.12,
         dashArray: index === 0 ? '7 4' : '4 4',
       });
-      polygon.bindTooltip(shape.id, {
-        permanent: true,
-        direction: 'center',
-        className: 'cadastral-label',
-        opacity: 0.9,
-      });
+      // Intentionally no permanent parcel labels: the map stays clean at project scale.
       polygon.bindPopup(`
         <div style="min-width:215px;font-family:Arial,sans-serif;font-size:12px;line-height:1.55">
           <div style="font-size:15px;font-weight:700;margin-bottom:6px">${shape.id}</div>
@@ -292,7 +280,6 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     anchor.on('click', () => onSelectProject?.(selectedProject.project_id ?? selectedProject.id));
     anchor.addTo(map);
     anchorLayerRef.current = anchor;
-
     parcelLayerRef.current = layers;
     map.setView(selectedCenter, 14, { animate: true });
   }, [selectedProject, selectedCenter, selectedScore, selectedRisk, baselineRisk, parcels, parcelGeometry, showParcels, onSelectProject]);
@@ -337,7 +324,6 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
 
       <div className="relative">
         <div ref={mapRef} className="h-[360px] w-full" />
-
         <div className="absolute right-4 top-4 z-[500] rounded-lg border border-slate-200 bg-white/95 px-3 py-2.5 shadow-md backdrop-blur">
           <div className="text-[12px] font-bold text-slate-900">Risk Level</div>
           <div className="mt-1.5 space-y-1.5 text-[11px] text-slate-700">
@@ -346,7 +332,6 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
             <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full" style={{ background: '#ef3340' }} />High Risk</div>
           </div>
         </div>
-
         <div className="absolute bottom-2 left-3 z-[500] rounded-md bg-white/90 px-2 py-1 text-[9px] text-slate-500 shadow-sm">
           {projects.length} projects • <span className="text-rose-600">{stats.high} high</span> • <span className="text-amber-600">{stats.medium} medium</span> • <span className="text-emerald-600">{stats.low} low</span>
         </div>
