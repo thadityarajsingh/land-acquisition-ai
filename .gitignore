@@ -7,10 +7,25 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies / builds
 node_modules
 dist
 dist-ssr
 *.local
+
+# Python runtime/cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Frontend/dev tooling
+.vite/
+.vite/
+
+# Generated synthetic expansion (regenerated from the tracked source dataset)
+ml/sih26017_enhanced_land_acquisition_dataset.csv
 
 # Editor directories and files
 .vscode/*
