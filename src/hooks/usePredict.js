@@ -29,7 +29,7 @@ function toDrivers(topFactors = {}) {
       displayImpact: `${impact >= 0 ? '+' : ''}${impact}`,
       direction: impact >= 0 ? 'up' : 'down',
       category: feature.includes('legal') || feature.includes('dispute') ? 'Legal / Judicial' : 'Model Feature',
-      description: 'SHAP contribution to this project prediction. Positive values increase predicted delay risk; negative values decrease it.',
+      description: 'SHAP contribution on the XGBoost log-odds output. Positive values increase predicted delay risk; negative values decrease it. This is a model association, not a causal effect.',
     };
   });
 }
