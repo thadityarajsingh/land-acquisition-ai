@@ -11,41 +11,68 @@ It is a **decision-support model**, not an autonomous decision maker.
 | Item | Current prototype |
 |---|---|
 | Selected algorithm | XGBoost classifier |
-| Baseline | Balanced RandomForest |
-| Dataset | SIH26017 synthetic prototype dataset |
-| Dataset rows | 1,200 |
+| Baseline | RandomForest |
+| Source dataset | SIH26017 synthetic prototype dataset |
+| Rows | 1,200 |
 | Target | `is_delayed` |
 | Positive class | 339 |
 | Negative class | 861 |
 | Test set | 240 rows (20%) |
 | Split | Stratified `train_test_split(random_state=42)` |
-| Imbalance handling | `scale_pos_weight = 2.54` for XGBoost |
+| Prediction features | 68 (36 numeric + 32 categorical) |
 | Explainability | SHAP TreeExplainer |
 
-## Evaluation
+## Current leakage-safe evaluation
 
-| Model | Accuracy | Weighted F1 | Delayed Precision | Delayed Recall | Delayed F1 | ROC-AUC | Average Precision |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| RandomForest (balanced) | 0.7083 | 0.5943 | 0.0000 | 0.0000 | 0.0000 | 0.5077 | 0.2962 |
-| XGBoost (selected) | 0.6708 | 0.6551 | 0.3922 | 0.2941 | 0.3361 | 0.5729 | 0.3756 |
+| Metric | XGBoost selected model |
+|---|---:|
+| Accuracy | 0.6333 |
+| Weighted F1 | 0.5925 |
+| Delayed Precision | 0.2222 |
+| Delayed Recall | 0.1176 |
+| Delayed F1 | 0.1538 |
+| ROC-AUC | 0.5300 |
+| Average Precision | 0.3131 |
 
-The selected XGBoost model correctly identified 20 of 68 delayed records in the documented held-out split. Delayed-class recall was therefore 29.41%.
+Held-out confusion matrix:
+
+```text
+                 Predicted
+                 0     1
+Actual 0       144    28
+Actual 1        60     8
+```
+
+Only 8 of 68 delayed records were identified in this fresh leakage-safe evaluation. The model therefore has **weak current predictive signal** and must be presented as a prototype.
 
 ## Inputs
 
-The model uses project/acquisition indicators such as location categories, project type, land area, affected families, compensation status, approval delay, legal disputes, possession, rehabilitation progress, stakeholder responsiveness, historical performance, documentation, notification, departments involved, acquisition stage, and historical delay count.
+The model uses 68 prediction-time features spanning project/acquisition indicators, green-zone/environmental constraints, GIS/spatial context, land use, social impact, ownership/legal status, administration/approvals, financial indicators, infrastructure, and hazards.
 
-`is_delayed` and `delay_days` are excluded from model inputs to avoid target leakage.
+Outcome/leakage fields including `is_delayed` and `delay_days` are excluded. Additional demo/provenance fields are also excluded from prediction.
+
+The expanded feature values are synthetic prototype values until authoritative source data is legitimately ingested.
 
 ## Preprocessing
 
 - Numeric values: median imputation + standard scaling.
 - Categorical values: most-frequent imputation + one-hot encoding.
 - The fitted preprocessing pipeline is persisted and reused during backend inference.
+- Backend inference validates the saved pipeline schema and can retrain a compatible prototype model if stale artifacts are detected.
+
+## Risk categories
+
+The dashboard/API use the same provisional presentation bands:
+
+- **Low:** probability < 0.40
+- **Medium:** 0.40 to < 0.70
+- **High:** >= 0.70
+
+These are presentation thresholds, not calibrated probabilities.
 
 ## Explainability
 
-SHAP TreeExplainer is used to provide feature-level contribution signals for individual predictions. A SHAP contribution explains the model's behavior for that prediction; it does **not** prove that a factor caused a real-world delay.
+SHAP TreeExplainer provides feature-level contribution signals for individual predictions. A SHAP contribution explains the model's behavior for that prediction; it does **not** prove that a factor caused a real-world delay.
 
 ## Intended use
 
@@ -69,14 +96,14 @@ The model must not be used by itself to:
 ## Limitations and risks
 
 1. The training/evaluation dataset is synthetic.
-2. The current delayed-class recall is modest.
-3. Risk categories are provisional bands, not calibrated probabilities.
+2. Current delayed-class recall is low.
+3. Risk categories are provisional and not calibrated probabilities.
 4. Synthetic data may not represent regional, legal, social, or administrative conditions in real projects.
 5. Model performance may change materially on authoritative historical data.
 6. Correlation in model features should not be interpreted as causation.
 
 ## Improvement plan
 
-Before any production use, the model should be retrained and independently validated on representative historical data, calibrated against the intended operational target, evaluated across regions and project types, checked for subgroup/error disparities, monitored after deployment, and reviewed under appropriate government data-governance and security processes.
+Before production use, the model should be retrained and independently validated on representative historical acquisition data, calibrated against the intended operational target, evaluated across regions and project types, checked for subgroup/error disparities, monitored after deployment, and reviewed under appropriate government data-governance and security processes.
 
-See [`ML.md`](./ML.md) and [`../ml/MODEL_EVALUATION.md`](../ml/MODEL_EVALUATION.md) for implementation and evaluation details.
+See [`ML.md`](./ML.md), [`../ml/MODEL_EVALUATION.md`](../ml/MODEL_EVALUATION.md), and [`REAL_DATA_SCHEMA.md`](./REAL_DATA_SCHEMA.md).
