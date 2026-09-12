@@ -12,13 +12,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow the local React/Vite frontend to call the FastAPI API during development.
-# Keep this explicit rather than using a wildcard so the demo has a clear trust boundary.
+# Allow the local React/Vite frontend and the deployed Render frontend.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "https://bhoomi-ai-frontend.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
