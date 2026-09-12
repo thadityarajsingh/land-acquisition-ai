@@ -1,26 +1,9 @@
 import pandas as pd
 
 from backend.services.model_service import model, pipeline
+from ml.preprocess import NUMERIC_FEATURES, CATEGORICAL_FEATURES
 
-FEATURE_COLUMNS = [
-    "land_area_acres",
-    "affected_families",
-    "approval_delay_days",
-    "legal_disputes",
-    "rehab_progress_pct",
-    "stakeholder_responsiveness_pct",
-    "historical_performance_score",
-    "departments_involved",
-    "historical_delay_count",
-    "state",
-    "district",
-    "project_type",
-    "compensation_status",
-    "possession_status",
-    "documentation_status",
-    "notification_status",
-    "acquisition_stage",
-]
+FEATURE_COLUMNS = NUMERIC_FEATURES + CATEGORICAL_FEATURES
 
 
 def _category(probability: float) -> str:
@@ -31,8 +14,18 @@ def _category(probability: float) -> str:
     return "High"
 
 
+def _feature_row(features: dict) -> pd.DataFrame:
+    # Build the exact schema expected by the retrained pipeline. Missing
+    # expanded features are intentionally left as None so the pipeline's
+    # imputers handle them consistently.
+    return pd.DataFrame(
+        [{column: features.get(column) for column in FEATURE_COLUMNS}],
+        columns=FEATURE_COLUMNS,
+    )
+
+
 def predict_project(features: dict) -> dict:
-    row = pd.DataFrame([features], columns=FEATURE_COLUMNS)
+    row = _feature_row(features)
     transformed = pipeline.transform(row)
     probability = float(model.predict_proba(transformed)[0][1])
     predicted_class = int(model.predict(transformed)[0])
