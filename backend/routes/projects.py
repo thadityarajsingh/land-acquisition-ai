@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 import pandas as pd
 
-from backend.services.prediction_service import predict_project
+from backend.services.prediction_service import predict_project, predict_projects
 
 
 DATASET_PATH = "ml/sih26017_synthetic_land_acquisition_dataset.csv"
@@ -37,29 +37,28 @@ def load_projects():
 
 def add_model_risk(df):
     records = df.to_dict(orient="records")
-    for record in records:
-        features = {column: record.get(column) for column in FEATURE_COLUMNS}
-        try:
-            prediction = predict_project(features)
-            record["risk_score"] = prediction["risk_score"]
-            record["risk_category"] = prediction["risk_category"]
-            record["predicted_delayed"] = prediction["predicted_delayed"]
-        except Exception:
-            # Keep project listing available even if one malformed row cannot be scored.
-            record["risk_score"] = None
-            record["risk_category"] = None
-            record["predicted_delayed"] = None
-    return records
+    try:
+        return predict_projects(records)
+    except Exception:
+        # Keep the listing available if the model cannot score the full batch.
+        enriched = []
+        for record in records:
+            item = dict(record)
+            try:
+                prediction = predict_project({column: item.get(column) for column in FEATURE_COLUMNS})
+                item.update(prediction)
+            except Exception:
+                item["risk_score"] = None
+                item["risk_category"] = None
+                item["predicted_delayed"] = None
+            enriched.append(item)
+        return enriched
 
 
 @router.get("")
 def get_projects():
-    df = load_projects()
-    records = add_model_risk(df)
-    return {
-        "count": len(records),
-        "projects": records,
-    }
+    records = add_model_risk(load_projects())
+    return {"count": len(records), "projects": records}
 
 
 @router.get("/{project_id}")
