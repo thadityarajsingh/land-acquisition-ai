@@ -19,8 +19,15 @@ export function App() {
   const [activeTab, setActiveTab] = useState("cadastral");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { projects, selectedProjectId, setSelectedProjectId, projectData, loading: projectsLoading } = useProjects();
-  const { prediction, loading: predictionLoading } = usePredict(projectData);
+  const {
+    projects,
+    selectedProjectId,
+    setSelectedProjectId,
+    projectData,
+    loading: projectsLoading,
+    error: projectsError,
+  } = useProjects();
+  const { prediction, loading: predictionLoading, error: predictionError } = usePredict(projectData);
   const { recommendations, loading: recommendationsLoading } = useRecommendations(selectedProjectId);
   const { whatIfResult, simulating, runSimulation, resetSimulation } = useWhatIf(projectData);
 
@@ -32,6 +39,7 @@ export function App() {
 
   if (!currentUser) return <LoginPage onLogin={handleLogin} />;
   const isLoading = projectsLoading || predictionLoading || recommendationsLoading;
+  const backendError = projectsError || predictionError;
 
   return (
     <div className="h-screen overflow-hidden bg-[#F8FAFC] flex flex-col font-sans relative">
@@ -43,10 +51,19 @@ export function App() {
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} projectData={projectData} currentUser={currentUser} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F8FAFC]">
           <div className="max-w-[1600px] mx-auto space-y-5">
-            {isLoading ? <DashboardSkeleton /> : <>
-              <GISMap projects={projects} selectedProjectId={selectedProjectId} onSelectProject={handleProjectSelect} baselineRisk={prediction?.riskScore} selectedRisk={whatIfResult?.simulatedScore} parcels={projectData?.parcels || []} />
-              <Dashboard activeTab={activeTab} setActiveTab={setActiveTab} projectData={projectData} prediction={prediction} recommendations={recommendations} whatIfResult={whatIfResult} onRunSimulation={runSimulation} simulating={simulating} onResetSimulation={resetSimulation} searchQuery={searchQuery} currentUser={currentUser} />
-            </>}
+            {isLoading ? <DashboardSkeleton /> : backendError ? (
+              <section className="rounded-2xl border border-rose-200 bg-white p-8 shadow-sm">
+                <h2 className="text-lg font-bold text-slate-900">Backend connection required</h2>
+                <p className="mt-2 text-sm text-slate-600">BhoomiIQ is configured to use the live FastAPI project and ML services. No mock project data is shown when the backend is unavailable.</p>
+                <p className="mt-3 rounded-lg bg-rose-50 p-3 font-mono text-xs text-rose-700">{backendError}</p>
+                <p className="mt-3 text-xs text-slate-500">Start FastAPI on http://localhost:8000 and refresh this page.</p>
+              </section>
+            ) : (
+              <>
+                <GISMap projects={projects} selectedProjectId={selectedProjectId} onSelectProject={handleProjectSelect} baselineRisk={prediction?.riskScore} selectedRisk={whatIfResult?.simulatedScore} parcels={projectData?.parcels || []} />
+                <Dashboard activeTab={activeTab} setActiveTab={setActiveTab} projectData={projectData} prediction={prediction} recommendations={recommendations} whatIfResult={whatIfResult} onRunSimulation={runSimulation} simulating={simulating} onResetSimulation={resetSimulation} searchQuery={searchQuery} currentUser={currentUser} />
+              </>
+            )}
           </div>
         </main>
       </div>
