@@ -10,6 +10,7 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
       ? `${Math.round((Number(score) / 100) * 180)} model-estimated days`
       : '—'
   );
+  const readableDelay = displayedDelay.replace(' model-estimated', '');
 
   const radius = 58;
   const circumference = 2 * Math.PI * radius;
@@ -21,10 +22,10 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Delay Risk Probability
+            Delay Risk
           </span>
           <h2 className="text-sm font-bold text-slate-800">
-            Composite Delay Index
+            Land Acquisition Delay Risk
           </h2>
         </div>
 
@@ -76,8 +77,7 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
           </div>
 
           <div className="text-center mt-1">
-            <div className="text-[10px] text-slate-400 font-medium">Prediction Source</div>
-            <div className="text-xs font-bold text-slate-700 font-mono">ML risk model</div>
+            <div className="text-[10px] text-slate-400 font-medium">Lower score = lower chance of delay</div>
           </div>
         </div>
 
@@ -86,14 +86,14 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-slate-500 flex items-center gap-1.5 text-[11px] font-medium">
                 <Clock className="w-3.5 h-3.5 text-rose-500" />
-                Model-Estimated Delay
+                Estimated Delay
               </span>
               <span className="font-bold text-rose-600 font-mono text-xs">
-                {displayedDelay}
+                {readableDelay}
               </span>
             </div>
             <p className="text-[10px] text-slate-500 leading-tight">
-              Approximate model scenario horizon derived from the predicted risk probability (0–180 days).
+              Expected delay based on current project data.
             </p>
           </div>
 
@@ -101,18 +101,24 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-slate-500 flex items-center gap-1.5 text-[11px] font-medium">
                 <AlertOctagon className="w-3.5 h-3.5 text-emerald-500" />
-                Decision Support Status
+                AI Recommendation
               </span>
-              <span className="font-bold text-slate-800 text-xs">Advisory</span>
+              <span className="font-bold text-slate-800 text-xs">No Immediate Action</span>
             </div>
             <p className="text-[10px] text-slate-500 leading-tight">
-              Use the risk score and SHAP drivers to prioritize review; this system does not make statutory or financial decisions.
+              Risk is currently low. Continue normal monitoring.
             </p>
           </div>
 
-          <div className="flex items-center justify-between px-1 text-[10px] text-slate-400">
-            <span>Critical Threshold: <strong className="text-slate-600">70 pts</strong></span>
-            <span className="text-emerald-600 font-medium">De-risked: &lt;40 pts</span>
+          <div className="space-y-1 px-1 text-[10px] text-slate-400">
+            <div>
+              <span className="font-medium text-slate-600">How was this calculated?</span>
+              <p className="mt-0.5 leading-tight">AI model analyzes approval delays, legal issues, past project performance and other project factors.</p>
+            </div>
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <span>High Risk starts at <strong className="text-slate-600">70 / 100</strong></span>
+              <span>Current Score: <strong className="text-slate-600">{safeScore} / 100</strong></span>
+            </div>
           </div>
         </div>
       </div>

@@ -322,7 +322,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
         </div>
       </div>
 
-      <div className="relative">
+      <div className="relative z-0 isolate">
         <div ref={mapRef} className="h-[360px] w-full" />
         <div className="absolute right-4 top-4 z-[500] rounded-lg border border-slate-200 bg-white/95 px-3 py-2.5 shadow-md backdrop-blur">
           <div className="text-[12px] font-bold text-slate-900">Risk Level</div>

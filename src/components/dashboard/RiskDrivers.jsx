@@ -9,15 +9,23 @@ export function RiskDrivers({ drivers = [] }) {
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Explainable AI (SHAP)
+            AI Explanation
           </span>
           <h2 className="text-sm font-bold text-slate-800">
-            Primary Delay Drivers
+            Why is this project at this risk?
           </h2>
+          <p className="mt-1 text-[10px] text-slate-500">
+            The AI shows which project factors are increasing or reducing the predicted delay risk.
+          </p>
         </div>
-        <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-mono font-medium">
-          SHAP Contribution • Log-Odds
+        <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+          Impact on Delay Risk
         </span>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-3 text-[10px] font-medium">
+        <span className="text-emerald-700">↘ Reduces delay risk</span>
+        <span className="text-rose-700">↗ Increases delay risk</span>
       </div>
 
       <div className="space-y-3 pt-3">
@@ -37,16 +45,21 @@ export function RiskDrivers({ drivers = [] }) {
                       {driver.name}
                     </div>
                     <div className="text-[10px] text-slate-400 font-medium">
-                      {driver.category}
+                      Project Factor
                     </div>
                   </div>
                 </div>
 
-                <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded-md shrink-0 ${
-                  isUp ? 'bg-rose-50 text-rose-700 border border-rose-200/80' : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
-                }`}>
-                  {driver.displayImpact || (isUp ? `+${driver.impact}` : `${driver.impact}`)}
-                </span>
+                <div className="flex flex-col items-end gap-0.5 shrink-0">
+                  <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded-md ${
+                    isUp ? 'bg-rose-50 text-rose-700 border border-rose-200/80' : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
+                  }`}>
+                    {driver.displayImpact || (isUp ? `+${driver.impact}` : `${driver.impact}`)}
+                  </span>
+                  <span className={`text-[9px] font-medium ${isUp ? 'text-rose-700' : 'text-emerald-700'}`}>
+                    {isUp ? 'Increases delay risk' : 'Reduces delay risk'}
+                  </span>
+                </div>
               </div>
 
               <div className="w-full bg-slate-200/70 h-1.5 rounded-full overflow-hidden">
