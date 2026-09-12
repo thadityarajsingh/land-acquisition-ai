@@ -1,38 +1,30 @@
+from pathlib import Path
+
 from fastapi import APIRouter, HTTPException
 import pandas as pd
 
 from backend.services.prediction_service import predict_project, predict_projects
+from ml.expand_dataset import expand
+from ml.preprocess import NUMERIC_FEATURES, CATEGORICAL_FEATURES
 
 
-DATASET_PATH = "ml/sih26017_synthetic_land_acquisition_dataset.csv"
-
-FEATURE_COLUMNS = [
-    "land_area_acres",
-    "affected_families",
-    "approval_delay_days",
-    "legal_disputes",
-    "rehab_progress_pct",
-    "stakeholder_responsiveness_pct",
-    "historical_performance_score",
-    "departments_involved",
-    "historical_delay_count",
-    "state",
-    "district",
-    "project_type",
-    "compensation_status",
-    "possession_status",
-    "documentation_status",
-    "notification_status",
-    "acquisition_stage",
-]
+ROOT_DIR = Path(__file__).resolve().parents[2]
+DATASET_PATH = ROOT_DIR / "ml" / "sih26017_synthetic_land_acquisition_dataset.csv"
+ENHANCED_DATASET_PATH = ROOT_DIR / "ml" / "sih26017_enhanced_land_acquisition_dataset.csv"
+FEATURE_COLUMNS = NUMERIC_FEATURES + CATEGORICAL_FEATURES
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
 
 def load_projects():
-    df = pd.read_csv(DATASET_PATH)
-    df = df.astype(object).where(pd.notna(df), None)
-    return df
+    if ENHANCED_DATASET_PATH.exists():
+        df = pd.read_csv(ENHANCED_DATASET_PATH)
+    else:
+        source = pd.read_csv(DATASET_PATH)
+        df = expand(source)
+        df.to_csv(ENHANCED_DATASET_PATH, index=False)
+
+    return df.astype(object).where(pd.notna(df), None)
 
 
 def add_model_risk(df):
