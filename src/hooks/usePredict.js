@@ -22,14 +22,14 @@ function formatFeatureName(feature) {
 
 function toDrivers(topFactors = {}) {
   return Object.entries(topFactors).map(([feature, shapValue]) => {
-    const impact = Number((Number(shapValue) * 10).toFixed(1));
+    const impact = Number(Number(shapValue).toFixed(3));
     return {
       name: formatFeatureName(feature),
       impact,
-      displayImpact: `${impact >= 0 ? '+' : ''}${impact} pts`,
+      displayImpact: `${impact >= 0 ? '+' : ''}${impact}`,
       direction: impact >= 0 ? 'up' : 'down',
       category: feature.includes('legal') || feature.includes('dispute') ? 'Legal / Judicial' : 'Model Feature',
-      description: 'SHAP contribution to this project prediction.',
+      description: 'SHAP contribution to this project prediction. Positive values increase predicted delay risk; negative values decrease it.',
     };
   });
 }
