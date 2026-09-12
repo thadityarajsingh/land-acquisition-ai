@@ -20,8 +20,7 @@ function fallbackCoordinates(project) {
     'Odisha': [20.20, 84.40],
     'West Bengal': [23.00, 87.80],
   };
-  const center = centers[project?.state] || [22.50, 78.90];
-  return center;
+  return centers[project?.state] || [22.50, 78.90];
 }
 
 function getCenter(project) {
@@ -47,22 +46,23 @@ function riskColor(score) {
   return score >= 70 ? '#ef3340' : score >= 40 ? '#e8a923' : '#19b979';
 }
 
-function buildParcelGeometry(center, count = 5) {
+function buildParcelGeometry(center, count = 6) {
   const [lat, lng] = center;
   const cosLat = Math.max(0.35, Math.cos((lat * Math.PI) / 180));
-  const width = 0.010 / cosLat;
-  const height = 0.004;
-  const step = width / count;
-  return Array.from({ length: count }, (_, index) => {
-    const left = lng - width / 2 + index * step;
-    const right = left + step;
-    const top = lat + height / 2 + ((index % 2) ? 0.00015 : -0.00005);
-    const bottom = lat - height / 2 + ((index % 3) ? -0.00012 : 0.00008);
-    return {
-      id: `Prototype-${String.fromCharCode(65 + index)}`,
-      positions: [[bottom, left], [bottom, right], [top, right], [top, left]],
-    };
-  });
+  const sx = 0.0042 / cosLat;
+  const sy = 0.0027;
+  const templates = [
+    [[-0.0029, -0.0042], [-0.0024, -0.0012], [0.0001, -0.0014], [0.0005, -0.0040]],
+    [[-0.0024, -0.0011], [-0.0025, 0.0012], [0.0004, 0.0014], [0.0001, -0.0014]],
+    [[-0.0025, 0.0013], [-0.0020, 0.0040], [0.0007, 0.0036], [0.0004, 0.0014]],
+    [[0.0006, -0.0040], [0.0001, -0.0014], [0.0030, -0.0010], [0.0034, -0.0037]],
+    [[0.0002, -0.0013], [0.0004, 0.0014], [0.0032, 0.0015], [0.0030, -0.0010]],
+    [[0.0007, 0.0037], [0.0030, 0.0015], [0.0037, 0.0040], [0.0032, 0.0047]],
+  ];
+  return templates.slice(0, count).map((points, index) => ({
+    id: `Prototype-${String.fromCharCode(65 + index)}`,
+    positions: points.map(([y, x]) => [lat + y * sy / 0.0027, lng + x * sx / 0.0042]),
+  }));
 }
 
 async function ensureLeaflet() {
@@ -116,6 +116,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
   const mapInstance = useRef(null);
   const projectLayerRef = useRef(null);
   const parcelLayerRef = useRef([]);
+  const anchorLayerRef = useRef(null);
   const [showProjects, setShowProjects] = useState(true);
   const [showParcels, setShowParcels] = useState(true);
 
@@ -126,7 +127,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
   const selectedCenter = selectedProject ? getCenter(selectedProject) : [22.5, 78.9];
   const selectedScore = selectedProject ? riskScore(selectedProject, selectedProjectId, selectedRisk) : 0;
   const parcelGeometry = useMemo(
-    () => buildParcelGeometry(selectedCenter, Math.max(5, Math.min(7, parcels.length || 5))),
+    () => buildParcelGeometry(selectedCenter, Math.max(5, Math.min(6, parcels.length || 6))),
     [selectedCenter, parcels.length],
   );
 
@@ -147,13 +148,14 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
         mapInstance.current = map;
         setTimeout(() => map.invalidateSize(), 100);
       } catch (_) {
-        // The rest of the dashboard remains usable if the map CDN is unavailable.
+        // Keep the dashboard usable if external map assets are unavailable.
       }
     })();
     return () => {
       cancelled = true;
       projectLayerRef.current = null;
       parcelLayerRef.current = [];
+      anchorLayerRef.current = null;
       if (mapInstance.current) {
         mapInstance.current.remove();
         mapInstance.current = null;
@@ -177,7 +179,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       chunkedLoading: true,
       showCoverageOnHover: false,
       maxClusterRadius: 42,
-      disableClusteringAtZoom: 8,
+      disableClusteringAtZoom: 9,
       spiderfyOnMaxZoom: true,
       zoomToBoundsOnClick: true,
     });
@@ -205,10 +207,10 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       });
 
       marker.bindPopup(`
-        <div style="min-width:190px;font-family:Arial,sans-serif;font-size:13px;line-height:1.55">
-          <div style="font-size:15px;font-weight:700;margin-bottom:8px">Land Parcel ${id ?? ''}</div>
-          <div><b>Area:</b> ${project.land_area_acres ?? '—'} Acres</div>
-          <div><b>Risk:</b> <span style="color:${color}">${riskLevel(score)}</span></div>
+        <div style="min-width:205px;font-family:Arial,sans-serif;font-size:13px;line-height:1.55">
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px">${id ?? 'Project'}</div>
+          <div><b>Land area:</b> ${project.land_area_acres ?? '—'} Acres</div>
+          <div><b>Risk:</b> <span style="color:${color};font-weight:700">${score.toFixed(0)}/100 • ${riskLevel(score)}</span></div>
           <div><b>Latitude:</b> ${Number(lat).toFixed(4)}</div>
           <div><b>Longitude:</b> ${Number(lng).toFixed(4)}</div>
           <div><b>Stage:</b> ${project.acquisition_stage ?? '—'}</div>
@@ -230,30 +232,40 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
 
     parcelLayerRef.current.forEach(layer => map.removeLayer(layer));
     parcelLayerRef.current = [];
+    if (anchorLayerRef.current) {
+      map.removeLayer(anchorLayerRef.current);
+      anchorLayerRef.current = null;
+    }
     if (!showParcels) return;
 
     const baseline = Number.isFinite(Number(baselineRisk)) ? Number(baselineRisk) : selectedScore;
     const simulated = Number.isFinite(Number(selectedRisk)) ? Number(selectedRisk) : baseline;
     const layers = [];
+    const projectColor = riskColor(simulated);
 
     parcelGeometry.forEach((shape, index) => {
       const parcel = parcels[index] || {};
       const polygon = L.polygon(shape.positions, {
-        color: riskColor(selectedScore),
-        weight: index === 0 ? 2.5 : 1.5,
-        fillColor: riskColor(selectedScore),
-        fillOpacity: 0.10,
-        dashArray: '5 5',
+        color: projectColor,
+        weight: index === 0 ? 2.5 : 1.6,
+        fillColor: projectColor,
+        fillOpacity: index === 0 ? 0.20 : 0.12,
+        dashArray: index === 0 ? '7 4' : '4 4',
       });
-      polygon.bindTooltip(shape.id, { permanent: true, direction: 'center', className: 'cadastral-label' });
+      polygon.bindTooltip(shape.id, {
+        permanent: true,
+        direction: 'center',
+        className: 'cadastral-label',
+        opacity: 0.9,
+      });
       polygon.bindPopup(`
-        <div style="min-width:200px;font-family:Arial,sans-serif;font-size:12px;line-height:1.5">
-          <b>${shape.id}</b><br/>
-          Project: ${selectedProject.project_id ?? selectedProject.id}<br/>
-          Risk: ${selectedScore.toFixed(0)}/100 (${riskLevel(selectedScore)})<br/>
-          Compensation: ${parcel.status || selectedProject.compensation_status || '—'}<br/>
-          What-If: ${simulated.toFixed(0)}/100<br/>
-          <em>Prototype cadastral geometry aligned to the project coordinate.</em>
+        <div style="min-width:215px;font-family:Arial,sans-serif;font-size:12px;line-height:1.55">
+          <div style="font-size:15px;font-weight:700;margin-bottom:6px">${shape.id}</div>
+          <div><b>Project:</b> ${selectedProject.project_id ?? selectedProject.id}</div>
+          <div><b>Project risk:</b> <span style="color:${projectColor};font-weight:700">${simulated.toFixed(0)}/100 • ${riskLevel(simulated)}</span></div>
+          <div><b>Compensation:</b> ${parcel.status || selectedProject.compensation_status || '—'}</div>
+          <div><b>Acquisition stage:</b> ${selectedProject.acquisition_stage || '—'}</div>
+          <div style="margin-top:6px;color:#64748b"><em>Prototype parcel geometry spatially aligned to the selected project coordinate.</em></div>
         </div>
       `);
       polygon.on('click', () => onSelectProject?.(selectedProject.project_id ?? selectedProject.id));
@@ -261,8 +273,28 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       layers.push(polygon);
     });
 
+    const anchor = L.circleMarker(selectedCenter, {
+      radius: 8,
+      color: '#ffffff',
+      weight: 3,
+      fillColor: projectColor,
+      fillOpacity: 1,
+    });
+    anchor.bindTooltip(`Selected project • ${selectedProject.project_id ?? selectedProject.id}`, { direction: 'top', offset: [0, -8] });
+    anchor.bindPopup(`
+      <div style="font-family:Arial,sans-serif;font-size:12px;line-height:1.5">
+        <b>${selectedProject.project_id ?? selectedProject.id}</b><br/>
+        ${selectedProject.district ?? '—'}, ${selectedProject.state ?? '—'}<br/>
+        Risk: ${simulated.toFixed(0)}/100 • ${riskLevel(simulated)}<br/>
+        <span style="color:#64748b">GIS-cadastral alignment anchor</span>
+      </div>
+    `);
+    anchor.on('click', () => onSelectProject?.(selectedProject.project_id ?? selectedProject.id));
+    anchor.addTo(map);
+    anchorLayerRef.current = anchor;
+
     parcelLayerRef.current = layers;
-    map.setView(selectedCenter, 12, { animate: true });
+    map.setView(selectedCenter, 14, { animate: true });
   }, [selectedProject, selectedCenter, selectedScore, selectedRisk, baselineRisk, parcels, parcelGeometry, showParcels, onSelectProject]);
 
   const stats = useMemo(() => {
@@ -289,7 +321,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
               <MapPin className="h-4 w-4 text-blue-600" />
               Land parcels and their acquisition risk
             </div>
-            <p className="mt-0.5 text-[10px] text-slate-500">OpenStreetMap • dataset coordinates • project risk visualization</p>
+            <p className="mt-0.5 text-[10px] text-slate-500">OpenStreetMap • dataset coordinates • spatial risk visualization</p>
           </div>
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => setShowProjects(v => !v)} className={`rounded-full border px-2.5 py-1 text-[9px] font-semibold ${showProjects ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
@@ -321,8 +353,8 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       </div>
 
       <div className="flex items-center justify-between gap-2 border-t border-slate-200 px-4 py-1.5 text-[9px] text-slate-500">
-        <span>Click a marker to inspect land parcel risk and coordinate details.</span>
-        <span>{selectedProject && hasValidCoordinates(selectedProject) ? 'Dataset coordinate' : 'Prototype fallback coordinate'} • Prototype cadastral overlay</span>
+        <span>Click a project marker or parcel to inspect acquisition risk.</span>
+        <span>{selectedProject && hasValidCoordinates(selectedProject) ? 'Dataset coordinate' : 'Prototype fallback coordinate'} • Prototype parcel geometry</span>
       </div>
     </section>
   );
