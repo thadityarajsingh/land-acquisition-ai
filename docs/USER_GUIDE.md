@@ -2,7 +2,7 @@
 
 ## 1. Sign in
 
-Open the BhoomiIQ frontend and use the login screen provided by the application. The current authentication flow is a client-side prototype and stores the active session in browser local storage.
+Open the BhoomiIQ frontend and use the login screen provided by the application. The current authentication flow is a **client-side prototype** and stores the active session in browser local storage; it is not a production identity/access-control system.
 
 ## 2. Select a project
 
@@ -12,11 +12,11 @@ After sign-in, choose a project from the project selector. The frontend requests
 
 The dashboard presents the model risk score and risk category. A higher score indicates a higher model-estimated likelihood of the delayed class.
 
-Risk categories are provisional:
+Risk categories are provisional and aligned across the API and dashboard:
 
-- Low: below 33
-- Medium: 33 to below 66
-- High: 66 and above
+- Low: below 40
+- Medium: 40 to below 70
+- High: 70 and above
 
 The score is for prioritization and exploration, not a guaranteed forecast.
 
@@ -46,7 +46,7 @@ Scenario project features
      scenario risk
 ```
 
-The comparison shows the model-estimated score change and prototype delay estimate.
+The comparison shows the model-estimated score change and prototype delay estimate. The scenario now carries the complete prediction-time feature schema, while the visible policy controls modify selected supported model fields.
 
 ## 6. Use the GIS view
 
