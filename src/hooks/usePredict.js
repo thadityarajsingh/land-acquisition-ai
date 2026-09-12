@@ -13,6 +13,18 @@ const FEATURE_LABELS = {
   historical_delay_count: 'Historical Delay Count',
 };
 
+const FEATURE_EXPLANATIONS = {
+  land_area_acres: 'Size of the land area involved in the project.',
+  affected_families: 'Number of families affected by the land acquisition.',
+  approval_delay_days: 'Number of days approvals have already been delayed.',
+  legal_disputes: 'Number of legal disputes connected with the project.',
+  rehab_progress_pct: 'Progress made in rehabilitation and resettlement work.',
+  stakeholder_responsiveness_pct: 'How responsive departments, landowners, and other project participants are.',
+  historical_performance_score: 'How well similar past projects performed on schedule.',
+  departments_involved: 'Number of departments involved in the acquisition process.',
+  historical_delay_count: 'Number of delays recorded in similar past projects.',
+};
+
 function formatFeatureName(feature) {
   if (FEATURE_LABELS[feature]) return FEATURE_LABELS[feature];
   const known = Object.keys(FEATURE_LABELS).find(key => feature.startsWith(`${key}_`));
@@ -29,7 +41,7 @@ function toDrivers(topFactors = {}) {
       displayImpact: `${impact >= 0 ? '+' : ''}${impact}`,
       direction: impact >= 0 ? 'up' : 'down',
       category: feature.includes('legal') || feature.includes('dispute') ? 'Legal / Judicial' : 'Model Feature',
-      description: 'SHAP contribution on the XGBoost log-odds output. Positive values increase predicted delay risk; negative values decrease it. This is a model association, not a causal effect.',
+      description: FEATURE_EXPLANATIONS[feature] || 'A project factor considered by the AI when estimating delay risk.',
     };
   });
 }

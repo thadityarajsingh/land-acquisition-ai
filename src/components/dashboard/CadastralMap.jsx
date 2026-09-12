@@ -9,8 +9,8 @@ function buildPrototypeParcels(projectData) {
   const baseArea = Number.isFinite(totalArea) && totalArea > 0 ? totalArea / 5 : null;
 
   return Array.from({ length: 5 }, (_, index) => ({
-    gutNo: `Prototype-${String.fromCharCode(65 + index)}`,
-    owner: 'Prototype parcel',
+    gutNo: `Plot ${index + 1}`,
+    owner: 'Demo parcel',
     riskScore: Math.max(0, Math.min(100, totalRisk + (index - 2) * 3)),
     areaAcres: baseArea ? Number(baseArea.toFixed(2)) : null,
     awardedCompensation: null,
@@ -33,7 +33,7 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel, projec
           </div>
           <p className="mt-0.5 text-[11px] text-slate-500">
             {usingPrototype
-              ? 'Prototype parcel records are synchronized with the GIS overlay above.'
+              ? 'Demo parcel records are synchronized with the GIS overlay above.'
               : 'Parcel details are synchronized with the GIS overlay above.'}
           </p>
         </div>
@@ -44,7 +44,7 @@ export function CadastralMap({ parcels = [], selectedGut, onSelectParcel, projec
 
       {usingPrototype && (
         <div className="border-b border-amber-100 bg-amber-50/70 px-4 py-2 text-[10px] text-amber-800">
-          Prototype geometry only — official cadastral parcel boundaries are not available in the supplied dataset.
+          Demo geometry only — official cadastral parcel boundaries are not available in the supplied dataset.
         </div>
       )}
 

@@ -60,7 +60,7 @@ export function App() {
               </section>
             ) : (
               <>
-                <GISMap projects={projects} selectedProjectId={selectedProjectId} onSelectProject={handleProjectSelect} baselineRisk={prediction?.riskScore} selectedRisk={whatIfResult?.simulatedScore} parcels={projectData?.parcels || []} />
+                <GISMap projects={projects} selectedProjectId={selectedProjectId} onSelectProject={handleProjectSelect} baselineRisk={prediction?.riskScore} selectedRisk={whatIfResult?.simulatedScore} parcels={projectData?.parcels || []} searchQuery={searchQuery} />
                 <Dashboard activeTab={activeTab} setActiveTab={setActiveTab} projectData={projectData} prediction={prediction} recommendations={recommendations} whatIfResult={whatIfResult} onRunSimulation={runSimulation} simulating={simulating} onResetSimulation={resetSimulation} searchQuery={searchQuery} currentUser={currentUser} />
               </>
             )}
