@@ -6,6 +6,33 @@ BhoomiIQ is a full-stack prototype built around a React/Vite frontend, FastAPI b
 
 > **Important:** The current ML dataset is synthetic prototype data and the GIS layer contains prototype geometry where official cadastral boundaries are unavailable. Model outputs and recommendations are advisory and must not be treated as legal, administrative, or guaranteed operational decisions.
 
+## ⚡ Judge Quick Start
+
+**Best first stop:** [`docs/JUDGE_GUIDE.md`](docs/JUDGE_GUIDE.md)
+
+| Open | Purpose |
+|---|---|
+| **Live app** | https://bhoomi-ai-frontend.onrender.com |
+| **Backend health** | https://bhoomi-ai-backend-4zod.onrender.com/health |
+| **Swagger / API** | https://bhoomi-ai-backend-4zod.onrender.com/docs |
+| **Judge Guide** | [`docs/JUDGE_GUIDE.md`](docs/JUDGE_GUIDE.md) |
+| **Problem** | [`docs/PROBLEM_STATEMENT.md`](docs/PROBLEM_STATEMENT.md) |
+| **Solution** | [`docs/SOLUTION.md`](docs/SOLUTION.md) |
+| **Demo walkthrough** | [`docs/DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) |
+| **Model Card** | [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) |
+| **Data Dictionary** | [`docs/DATA_DICTIONARY.md`](docs/DATA_DICTIONARY.md) |
+
+### 5-minute evaluation
+
+1. Open the **Live app**.
+2. Select/search project **`LA-0001`**.
+3. Review the **risk score/category**.
+4. Open **Risk Drivers / SHAP** to see model contributions.
+5. Run a **What-If** scenario and compare baseline vs simulated risk.
+6. Open **GIS** to see project location and risk styling.
+7. Open **Recommendations** for advisory follow-up actions.
+8. If needed, verify the backend with **Swagger** or `/health`.
+
 ## Live deployment
 
 - **Frontend:** https://bhoomi-ai-frontend.onrender.com
@@ -17,9 +44,9 @@ BhoomiIQ is a full-stack prototype built around a React/Vite frontend, FastAPI b
 
 | Capability | What it does |
 |---|---|
-| Risk prediction | Scores the probability of project delay using the trained model |
-| Risk categories | Converts the model score into provisional Low / Medium / High bands |
-| SHAP explanation | Shows the strongest model contributions for an individual prediction |
+| Risk prediction | Produces a model-derived risk score for project prioritization |
+| Risk categories | Converts the score into provisional Low / Medium / High bands |
+| SHAP explanation | Shows feature contribution signals for an individual prediction |
 | What-If simulation | Compares baseline and scenario feature sets using the same model |
 | Project intelligence | Loads and scores project records from the prototype dataset |
 | Recommendations | Generates rule-based advisory actions from recorded risk factors |
@@ -72,7 +99,8 @@ land-acquisition-ai/
 │   ├── App.jsx                 # Application orchestration
 │   └── main.jsx                # React entry point
 ├── tests/                      # Test resources
-├── docs/                       # Technical documentation
+├── docs/                       # Judge + technical documentation
+├── .github/workflows/          # Automated build/check workflow
 ├── package.json                # Frontend dependencies/scripts
 └── vite.config.js              # Vite configuration
 ```
@@ -161,7 +189,7 @@ Restart Vite after changing environment variables.
 
 1. `VITE_API_URL`, when configured.
 2. `http://127.0.0.1:8000` when the browser is running on localhost.
-3. The deployed BhoomiIQ Render backend for non-local builds.
+3. The deployed BhoomiIQ backend for non-local builds.
 
 Never put secrets in `VITE_*` variables because they are exposed to the browser bundle.
 
@@ -196,7 +224,7 @@ The current pipeline:
 7. Persists the model and preprocessing pipeline for backend inference.
 8. Uses SHAP TreeExplainer for per-prediction model explanations.
 
-Current held-out evaluation is documented in [`ml/MODEL_EVALUATION.md`](ml/MODEL_EVALUATION.md) and summarized in [`docs/ML.md`](docs/ML.md).
+Current held-out evaluation is documented in [`ml/MODEL_EVALUATION.md`](ml/MODEL_EVALUATION.md) and summarized in [`docs/ML.md`](docs/ML.md). The selected model has 29.41% delayed-class recall on the documented held-out split, so it must be presented as a prototype rather than a production-grade predictor.
 
 ## GIS
 
@@ -239,9 +267,9 @@ npm run build     # Production build in dist/
 npm run preview   # Preview production build
 ```
 
-## Testing
+## Testing & CI
 
-Use [`docs/TESTING.md`](docs/TESTING.md) for the complete smoke-test and production verification checklist.
+Use [`docs/TESTING.md`](docs/TESTING.md) for the complete smoke-test and production verification checklist. The repository also contains a GitHub Actions workflow for frontend build and backend/ML checks.
 
 Minimum checks:
 
@@ -253,29 +281,50 @@ curl http://localhost:8000/projects
 
 ## Documentation
 
-- [`docs/README.md`](docs/README.md) — documentation index
+### Judge-facing
+
+- [`docs/JUDGE_GUIDE.md`](docs/JUDGE_GUIDE.md) — **start here for judging**
+- [`docs/PROBLEM_STATEMENT.md`](docs/PROBLEM_STATEMENT.md) — problem and scope
+- [`docs/SOLUTION.md`](docs/SOLUTION.md) — complete solution overview
+- [`docs/DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) — presentation sequence
+- [`docs/screenshots/README.md`](docs/screenshots/README.md) — final screenshot checklist
+
+### Technical
+
+- [`docs/README.md`](docs/README.md) — complete documentation index
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system architecture and data flow
 - [`docs/API.md`](docs/API.md) — API reference
-- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) — local development
-- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — Render deployment
+- [`docs/DATA_DICTIONARY.md`](docs/DATA_DICTIONARY.md) — dataset field definitions
+- [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) — model purpose, evaluation, limitations
 - [`docs/ML.md`](docs/ML.md) — machine learning documentation
 - [`docs/GIS.md`](docs/GIS.md) — GIS implementation and limitations
+- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) — local development
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — Render deployment
 - [`docs/TESTING.md`](docs/TESTING.md) — testing and verification
+- [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — user instructions
+- [`docs/TEAM.md`](docs/TEAM.md) — team workstreams and responsibilities
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution workflow
 - [`SECURITY.md`](SECURITY.md) — security policy
+- [`CHANGELOG.md`](CHANGELOG.md) — project history
 - [`ml/BACKEND_HANDOFF.md`](ml/BACKEND_HANDOFF.md) — ML/backend handoff
 - [`ml/MODEL_EVALUATION.md`](ml/MODEL_EVALUATION.md) — model evaluation
+
+## Source of truth / branches
+
+`main` is the **final deployable source of truth** for the submitted project. The code, model artifacts, synthetic dataset, documentation, CI workflow, and deployment instructions required to understand the project are maintained there.
+
+Historical development branches may exist in GitHub while the repository is being cleaned up. Judges should use **`main` only**. Before the final submission, remove obsolete branches in GitHub so the branch list contains only the intended final branch.
 
 ## Team
 
 | Area | Responsibility |
 |---|---|
-| ML | Risk prediction and model evaluation |
-| Backend | FastAPI API and model integration |
-| Frontend | React dashboard, What-If workflow, UI |
-| Data | Dataset preparation and validation |
-| GIS | Geographic visualization and geospatial integration |
-| Documentation | Technical documentation and presentation |
+| Product / SIH integration | Problem framing, feature prioritization, demo flow, and requirement alignment |
+| ML / Data Science | Risk prediction, preprocessing, model evaluation, and SHAP explanations |
+| Backend | FastAPI API, model integration, services, and deployment interface |
+| Frontend | React dashboard, authentication UI, What-If workflow, and UX |
+| GIS | Geographic visualization, clustering, coordinates, and prototype parcel layer |
+| Testing / Documentation | Verification, deployment checks, documentation, and presentation material |
 
 ## Status
 
