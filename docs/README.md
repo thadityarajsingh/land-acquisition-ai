@@ -1,6 +1,6 @@
 # BhoomiIQ Documentation
 
-This directory contains the technical and operational documentation for the BhoomiIQ Land Acquisition Risk Intelligence Platform.
+This directory contains the technical, operational, and user-facing documentation for the BhoomiIQ Land Acquisition Risk Intelligence Platform.
 
 ## Documentation map
 
@@ -12,9 +12,11 @@ This directory contains the technical and operational documentation for the Bhoo
 | [Deployment Guide](./DEPLOYMENT.md) | Render deployment for the frontend and FastAPI backend |
 | [Machine Learning](./ML.md) | Dataset, preprocessing, model, scoring, SHAP, evaluation, and limitations |
 | [GIS](./GIS.md) | Map data flow, coordinate handling, risk visualization, and GIS limitations |
-| [Testing](./TESTING.md) | Manual and automated verification checklist |
+| [Testing](./TESTING.md) | Manual and production verification checklist |
+| [User Guide](./USER_GUIDE.md) | How to use the dashboard and interpret its outputs |
 | [Contributing](../CONTRIBUTING.md) | Branching, commits, pull requests, and coding expectations |
 | [Security](../SECURITY.md) | Security reporting and deployment safety notes |
+| [Changelog](../CHANGELOG.md) | High-level project and deployment history |
 
 ## Project status
 
@@ -29,4 +31,4 @@ BhoomiIQ is a prototype decision-support platform. The current ML evaluation use
 
 ## Source of truth
 
-The `main` branch is the deployable branch. Documentation should be updated whenever an API contract, deployment setting, model behavior, data source, or major UI workflow changes.
+The `main` branch is the deployable branch. Documentation should be updated whenever an API contract, deployment setting, model behavior, data source, security assumption, or major UI workflow changes.
