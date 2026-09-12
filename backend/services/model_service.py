@@ -1,10 +1,11 @@
 from pathlib import Path
 import joblib
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+ROOT_DIR = Path(__file__).resolve().parents[2]
 
-MODEL_PATH = BASE_DIR / "models" / "model.joblib"
-PIPELINE_PATH = BASE_DIR / "models" / "pipeline.joblib"
+# Use the single canonical model artifacts produced by the ML training pipeline.
+MODEL_PATH = ROOT_DIR / "ml" / "model" / "model.joblib"
+PIPELINE_PATH = ROOT_DIR / "ml" / "model" / "pipeline.joblib"
 
 model = joblib.load(MODEL_PATH)
 pipeline = joblib.load(PIPELINE_PATH)
