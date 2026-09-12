@@ -2,7 +2,7 @@ name: Integration CI
 
 on:
   push:
-    branches: [integration]
+    branches: [develop, integration]
   pull_request:
     branches: [develop]
 
@@ -26,5 +26,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r backend/requirements.txt
+      - run: pip install pytest httpx
       - run: python -m compileall backend
       - run: python -m compileall ml
+      - run: pytest -v
