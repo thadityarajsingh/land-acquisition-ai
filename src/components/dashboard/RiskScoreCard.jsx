@@ -1,15 +1,20 @@
 import React from 'react';
-import { Clock, ShieldCheck } from 'lucide-react';
+import { Clock, AlertOctagon } from 'lucide-react';
 import { RiskCategoryBadge } from './RiskCategoryBadge';
 import { getRiskLevel } from '../../lib/utils';
 
-export function RiskScoreCard({ score = 82, projectData, simulationDelta = null }) {
+export function RiskScoreCard({ score = 82, projectData, simulationDelta = null, estimatedDelay = null }) {
   const meta = getRiskLevel(score);
-  const estimatedDelayDays = Math.round((Number(score) / 100) * 180);
+  const displayedDelay = estimatedDelay || (
+    Number.isFinite(Number(score))
+      ? `${Math.round((Number(score) / 100) * 180)} model-estimated days`
+      : '—'
+  );
 
   const radius = 58;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (score / 100) * circumference;
+  const safeScore = Math.max(0, Math.min(100, Number(score) || 0));
+  const strokeDashoffset = circumference - (safeScore / 100) * circumference;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] p-5 hover:shadow-md transition-all duration-300">
@@ -22,7 +27,8 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null 
             Composite Delay Index
           </h2>
         </div>
-        <RiskCategoryBadge score={score} category={score >= 70 ? 'HIGH RISK' : score >= 40 ? 'MEDIUM RISK' : 'LOW RISK'} />
+
+        <RiskCategoryBadge score={safeScore} category={safeScore >= 70 ? 'HIGH RISK' : safeScore >= 40 ? 'MEDIUM RISK' : 'LOW RISK'} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center pt-4">
@@ -33,7 +39,7 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null 
                 cx="70"
                 cy="70"
                 r={radius}
-                className="text-slate-100 transition-colors"
+                className="text-slate-100"
                 strokeWidth="10"
                 stroke="currentColor"
                 fill="transparent"
@@ -53,14 +59,14 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null 
             </svg>
 
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-3xl font-black text-slate-900 font-mono tracking-tight transition-all duration-300">
-                {score}
+              <span className="text-3xl font-black text-slate-900 font-mono tracking-tight">
+                {safeScore}
               </span>
               <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
                 Score / 100
               </span>
               {simulationDelta !== null && simulationDelta !== 0 && (
-                <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-full mt-0.5 transition-all duration-300 animate-view-fade-in ${
+                <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded-full mt-0.5 animate-view-fade-in ${
                   simulationDelta < 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                 }`}>
                   {simulationDelta > 0 ? `+${simulationDelta}` : simulationDelta} pts
@@ -71,19 +77,19 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null 
 
           <div className="text-center mt-1">
             <div className="text-[10px] text-slate-400 font-medium">Prediction Source</div>
-            <div className="text-xs font-bold text-slate-700">ML risk model</div>
+            <div className="text-xs font-bold text-slate-700 font-mono">ML risk model</div>
           </div>
         </div>
 
         <div className="sm:col-span-7 space-y-2.5">
-          <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/60">
+          <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/60 hover:bg-slate-50 transition-colors">
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-slate-500 flex items-center gap-1.5 text-[11px] font-medium">
                 <Clock className="w-3.5 h-3.5 text-rose-500" />
                 Model-Estimated Delay
               </span>
               <span className="font-bold text-rose-600 font-mono text-xs">
-                {estimatedDelayDays} days
+                {displayedDelay}
               </span>
             </div>
             <p className="text-[10px] text-slate-500 leading-tight">
@@ -91,15 +97,13 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null 
             </p>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/60">
+          <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/60 hover:bg-slate-50 transition-colors">
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-slate-500 flex items-center gap-1.5 text-[11px] font-medium">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <AlertOctagon className="w-3.5 h-3.5 text-emerald-500" />
                 Decision Support Status
               </span>
-              <span className="font-bold text-slate-800 text-xs">
-                Advisory
-              </span>
+              <span className="font-bold text-slate-800 text-xs">Advisory</span>
             </div>
             <p className="text-[10px] text-slate-500 leading-tight">
               Use the risk score and SHAP drivers to prioritize review; this system does not make statutory or financial decisions.
