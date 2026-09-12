@@ -10,30 +10,33 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 TARGET_COLUMN = "is_delayed"
-
 DROP_COLUMNS = ["project_id", "delay_days"]
 
+# Prediction-time features. Outcome/leakage fields such as delay_days,
+# compensation_paid_pct and resettlement_status are intentionally excluded.
 NUMERIC_FEATURES = [
-    "land_area_acres",
-    "affected_families",
-    "approval_delay_days",
-    "legal_disputes",
-    "rehab_progress_pct",
-    "stakeholder_responsiveness_pct",
-    "historical_performance_score",
-    "departments_involved",
-    "historical_delay_count",
+    "land_area_acres", "affected_families", "approval_delay_days", "legal_disputes",
+    "rehab_progress_pct", "stakeholder_responsiveness_pct", "historical_performance_score",
+    "departments_involved", "historical_delay_count",
+    "green_zone_pct", "forest_area_pct", "tree_cover_pct", "protected_area_distance_km",
+    "waterbody_distance_m", "elevation_m", "slope_degree", "distance_to_road_km",
+    "distance_to_highway_km", "distance_to_railway_km", "distance_to_city_km",
+    "agricultural_area_pct", "residential_area_pct", "commercial_area_pct", "industrial_area_pct",
+    "landowners_count", "displaced_families", "vulnerable_households", "livelihood_dependency_pct",
+    "record_completeness_pct", "required_clearances_count", "documentation_completeness_pct",
+    "estimated_land_value_lakh", "market_value_variance_pct", "distance_to_school_km",
+    "distance_to_hospital_km", "distance_to_market_km",
 ]
 
 CATEGORICAL_FEATURES = [
-    "state",
-    "district",
-    "project_type",
-    "compensation_status",
-    "possession_status",
-    "documentation_status",
-    "notification_status",
-    "acquisition_stage",
+    "state", "district", "project_type", "compensation_status", "possession_status",
+    "documentation_status", "notification_status", "acquisition_stage",
+    "green_zone_status", "eco_sensitive_zone", "wetland_present", "environmental_clearance_required",
+    "tree_cutting_required", "land_use_type", "land_conversion_required", "ownership_type",
+    "ownership_conflict", "title_verification_status", "encumbrance_status", "inheritance_dispute",
+    "mutation_status", "boundary_dispute", "court_case_status", "public_hearing_status",
+    "authority_approval_status", "gazette_notification_status", "flood_risk", "waterlogging_risk",
+    "erosion_risk", "seismic_zone", "soil_type", "drainage_quality",
 ]
 
 
@@ -54,11 +57,8 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop_duplicates().copy()
     df = df.drop(columns=[c for c in DROP_COLUMNS if c in df.columns and c != TARGET_COLUMN])
     df = df.dropna(subset=[TARGET_COLUMN])
-
-    # Strip whitespace without converting NaN/None into the string "nan".
     for col in df.select_dtypes(include="object").columns:
         df[col] = df[col].apply(lambda value: value.strip() if isinstance(value, str) else value)
-
     return df
 
 
