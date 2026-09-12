@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { MapPin, Layers, Route, ShieldAlert, MousePointer2 } from 'lucide-react';
+import { MapPin, Layers, Route } from 'lucide-react';
 
 function hasValidCoordinates(project) {
   const lat = Number(project?.latitude);
@@ -9,57 +9,58 @@ function hasValidCoordinates(project) {
 
 function fallbackCoordinates(project) {
   const centers = {
-    'Uttar Pradesh': [26.85, 80.95], 'Maharashtra': [19.75, 75.7], 'Karnataka': [15.3, 75.7],
-    'Tamil Nadu': [11.0, 78.3], 'Gujarat': [22.3, 71.8], 'Rajasthan': [27.0, 74.2],
-    'Madhya Pradesh': [23.5, 78.0], 'Bihar': [25.8, 85.3], 'Odisha': [20.2, 84.4], 'West Bengal': [23.0, 87.8],
+    'Uttar Pradesh': [26.85, 80.95],
+    'Maharashtra': [19.75, 75.70],
+    'Karnataka': [15.30, 75.70],
+    'Tamil Nadu': [11.00, 78.30],
+    'Gujarat': [22.30, 71.80],
+    'Rajasthan': [27.00, 74.20],
+    'Madhya Pradesh': [23.50, 78.00],
+    'Bihar': [25.80, 85.30],
+    'Odisha': [20.20, 84.40],
+    'West Bengal': [23.00, 87.80],
   };
-  const center = centers[project?.state] || [22.5, 78.9];
-  const text = `${project?.state ?? ''}:${project?.district ?? ''}`;
-  let hash = 0;
-  for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) | 0;
-  return [center[0] + ((hash % 80) - 40) / 100, center[1] + ((((hash / 80) | 0) % 80) - 40) / 100];
-}
-
-function riskLevel(score) {
-  const value = Number(score);
-  return value >= 70 ? 'High' : value >= 40 ? 'Medium' : 'Low';
-}
-
-function riskColor(score) {
-  const value = Number(score);
-  return value >= 70 ? '#dc2626' : value >= 40 ? '#d97706' : '#059669';
-}
-
-function getRisk(project, selectedRisk) {
-  const raw = Number(project?.risk_score ?? project?.riskScore ?? 0);
-  const base = raw <= 1 ? raw * 100 : raw;
-  return Number.isFinite(Number(selectedRisk)) ? Number(selectedRisk) : (Number.isFinite(base) ? base : 50);
+  const center = centers[project?.state] || [22.50, 78.90];
+  return center;
 }
 
 function getCenter(project) {
-  return hasValidCoordinates(project) ? [Number(project.latitude), Number(project.longitude)] : fallbackCoordinates(project);
+  return hasValidCoordinates(project)
+    ? [Number(project.latitude), Number(project.longitude)]
+    : fallbackCoordinates(project);
 }
 
-function buildParcelGeometry(center, count = 7) {
+function riskScore(project, selectedProjectId, selectedRisk) {
+  const id = project?.project_id ?? project?.id;
+  if (id === selectedProjectId && Number.isFinite(Number(selectedRisk))) {
+    return Math.max(0, Math.min(100, Number(selectedRisk)));
+  }
+  const raw = Number(project?.risk_score ?? project?.riskScore ?? 0);
+  return Math.max(0, Math.min(100, raw <= 1 ? raw * 100 : raw));
+}
+
+function riskLevel(score) {
+  return score >= 70 ? 'High Risk' : score >= 40 ? 'Medium Risk' : 'Low Risk';
+}
+
+function riskColor(score) {
+  return score >= 70 ? '#ef3340' : score >= 40 ? '#e8a923' : '#19b979';
+}
+
+function buildParcelGeometry(center, count = 5) {
   const [lat, lng] = center;
   const cosLat = Math.max(0.35, Math.cos((lat * Math.PI) / 180));
-  const totalWidth = 0.010 / cosLat;
-  const height = 0.0042;
-  const step = totalWidth / count;
-
+  const width = 0.010 / cosLat;
+  const height = 0.004;
+  const step = width / count;
   return Array.from({ length: count }, (_, index) => {
-    const left = lng - totalWidth / 2 + index * step;
+    const left = lng - width / 2 + index * step;
     const right = left + step;
-    const topShift = ((index % 3) - 1) * 0.00032;
-    const bottomShift = (((index + 1) % 3) - 1) * 0.00025;
+    const top = lat + height / 2 + ((index % 2) ? 0.00015 : -0.00005);
+    const bottom = lat - height / 2 + ((index % 3) ? -0.00012 : 0.00008);
     return {
       id: `Prototype-${String.fromCharCode(65 + index)}`,
-      positions: [
-        [lat - height / 2 + bottomShift, left],
-        [lat - height / 2 + topShift, right],
-        [lat + height / 2 + topShift, right + step * 0.08],
-        [lat + height / 2 + bottomShift, left - step * 0.06],
-      ],
+      positions: [[bottom, left], [bottom, right], [top, right], [top, left]],
     };
   });
 }
@@ -83,53 +84,51 @@ async function ensureLeaflet() {
 }
 
 async function ensureClusterAssets() {
-  const loadCss = (href, id) => new Promise(resolve => {
-    if (document.getElementById(id)) return resolve();
+  const addCss = (href, id) => {
+    if (document.getElementById(id)) return;
     const link = document.createElement('link');
     link.id = id;
     link.rel = 'stylesheet';
     link.href = href;
-    link.onload = resolve;
-    link.onerror = resolve;
     document.head.appendChild(link);
-  });
-  const loadScript = (src, id) => new Promise((resolve, reject) => {
-    if (window.L?.MarkerClusterGroup) return resolve();
-    const existing = document.getElementById(id);
+  };
+  addCss('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css', 'leaflet-markercluster-css');
+  addCss('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css', 'leaflet-markercluster-default-css');
+  if (window.L?.MarkerClusterGroup) return;
+  await new Promise((resolve, reject) => {
+    const existing = document.getElementById('leaflet-markercluster-js');
     if (existing) {
       existing.addEventListener('load', resolve, { once: true });
       existing.addEventListener('error', reject, { once: true });
       return;
     }
     const script = document.createElement('script');
-    script.id = id;
-    script.src = src;
+    script.id = 'leaflet-markercluster-js';
+    script.src = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js';
     script.onload = resolve;
     script.onerror = reject;
     document.head.appendChild(script);
   });
-  await loadCss('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css', 'leaflet-markercluster-css');
-  await loadCss('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css', 'leaflet-markercluster-default-css');
-  await loadScript('https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js', 'leaflet-markercluster-js');
 }
 
 export function GISMap({ projects = [], selectedProjectId, onSelectProject, selectedRisk, baselineRisk, parcels = [] }) {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
-  const markerLayerRef = useRef(null);
-  const parcelLayerRef = useRef(null);
-  const [showParcels, setShowParcels] = useState(true);
+  const projectLayerRef = useRef(null);
+  const parcelLayerRef = useRef([]);
   const [showProjects, setShowProjects] = useState(true);
+  const [showParcels, setShowParcels] = useState(true);
 
   const selectedProject = useMemo(
     () => projects.find(project => (project.project_id ?? project.id) === selectedProjectId),
     [projects, selectedProjectId],
   );
   const selectedCenter = selectedProject ? getCenter(selectedProject) : [22.5, 78.9];
-  const selectedScore = selectedProject ? getRisk(selectedProject, selectedRisk) : 0;
-  const selectedCategory = riskLevel(selectedScore);
-  const selectedHasOfficialCoordinates = selectedProject ? hasValidCoordinates(selectedProject) : false;
-  const parcelGeometry = useMemo(() => buildParcelGeometry(selectedCenter, Math.max(5, Math.min(8, parcels.length || 7))), [selectedCenter, parcels.length]);
+  const selectedScore = selectedProject ? riskScore(selectedProject, selectedProjectId, selectedRisk) : 0;
+  const parcelGeometry = useMemo(
+    () => buildParcelGeometry(selectedCenter, Math.max(5, Math.min(7, parcels.length || 5))),
+    [selectedCenter, parcels.length],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -139,20 +138,22 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
         await ensureClusterAssets();
         if (cancelled || !mapRef.current || mapInstance.current) return;
         const L = window.L;
-        const map = L.map(mapRef.current, { zoomControl: true, preferCanvas: true }).setView([22.5, 78.9], 5);
+        const map = L.map(mapRef.current, { zoomControl: true, preferCanvas: true, attributionControl: true });
+        map.setView([22.5, 78.9], 5.2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors',
           maxZoom: 19,
         }).addTo(map);
         mapInstance.current = map;
+        setTimeout(() => map.invalidateSize(), 100);
       } catch (_) {
-        // Keep the dashboard usable if the external map provider is unavailable.
+        // The rest of the dashboard remains usable if the map CDN is unavailable.
       }
     })();
     return () => {
       cancelled = true;
-      markerLayerRef.current = null;
-      parcelLayerRef.current = null;
+      projectLayerRef.current = null;
+      parcelLayerRef.current = [];
       if (mapInstance.current) {
         mapInstance.current.remove();
         mapInstance.current = null;
@@ -165,63 +166,61 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     const L = window.L;
     if (!map || !L || !L.MarkerClusterGroup) return;
 
-    if (markerLayerRef.current) {
-      markerLayerRef.current.clearLayers();
-      map.removeLayer(markerLayerRef.current);
-      markerLayerRef.current = null;
+    if (projectLayerRef.current) {
+      projectLayerRef.current.clearLayers();
+      if (map.hasLayer(projectLayerRef.current)) map.removeLayer(projectLayerRef.current);
+      projectLayerRef.current = null;
     }
     if (!showProjects) return;
 
     const layer = L.markerClusterGroup({
       chunkedLoading: true,
       showCoverageOnHover: false,
-      maxClusterRadius: 55,
-      disableClusteringAtZoom: 9,
+      maxClusterRadius: 42,
+      disableClusteringAtZoom: 8,
       spiderfyOnMaxZoom: true,
       zoomToBoundsOnClick: true,
     });
 
-    const counts = new Map();
+    const coordinateCounts = new Map();
     projects.forEach(project => {
       const id = project.project_id ?? project.id;
-      const key = hasValidCoordinates(project)
-        ? `${Number(project.latitude).toFixed(6)},${Number(project.longitude).toFixed(6)}`
-        : `fallback:${project.state ?? ''}:${project.district ?? ''}`;
-      const duplicateIndex = counts.get(key) ?? 0;
-      counts.set(key, duplicateIndex + 1);
       const [lat, lng] = getCenter(project);
-      const offset = duplicateIndex === 0 ? [lat, lng] : [lat + Math.cos(duplicateIndex * 2.4) * 0.003, lng + Math.sin(duplicateIndex * 2.4) * 0.003];
-      const risk = getRisk(project, id === selectedProjectId ? selectedRisk : undefined);
-      const category = riskLevel(risk);
-      const color = riskColor(risk);
+      const key = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+      const duplicateIndex = coordinateCounts.get(key) ?? 0;
+      coordinateCounts.set(key, duplicateIndex + 1);
+      const offset = duplicateIndex === 0
+        ? [lat, lng]
+        : [lat + Math.cos(duplicateIndex * 2.4) * 0.0025, lng + Math.sin(duplicateIndex * 2.4) * 0.0025];
+
+      const score = riskScore(project, selectedProjectId, selectedRisk);
+      const color = riskColor(score);
+      const selected = id === selectedProjectId;
       const marker = L.circleMarker(offset, {
-        radius: id === selectedProjectId ? 10 : 6,
-        color,
+        radius: selected ? 9 : 6,
+        color: '#ffffff',
         fillColor: color,
-        fillOpacity: 0.82,
-        weight: id === selectedProjectId ? 3 : 2,
+        fillOpacity: 0.95,
+        weight: selected ? 3 : 2,
       });
+
       marker.bindPopup(`
-        <div style="min-width:190px">
-          <strong>${id ?? 'Project'}</strong><br/>
-          ${project.district ?? ''}, ${project.state ?? ''}<br/>
-          <strong>Risk:</strong> ${risk.toFixed(0)}/100 (${category})<br/>
-          <strong>Stage:</strong> ${project.acquisition_stage ?? '—'}<br/>
-          <strong>Land:</strong> ${project.land_area_acres ?? '—'} acres<br/>
-          <strong>Legal disputes:</strong> ${project.legal_disputes ?? '—'}<br/>
-          <strong>Compensation:</strong> ${project.compensation_status ?? '—'}
-        </div>`);
+        <div style="min-width:190px;font-family:Arial,sans-serif;font-size:13px;line-height:1.55">
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px">Land Parcel ${id ?? ''}</div>
+          <div><b>Area:</b> ${project.land_area_acres ?? '—'} Acres</div>
+          <div><b>Risk:</b> <span style="color:${color}">${riskLevel(score)}</span></div>
+          <div><b>Latitude:</b> ${Number(lat).toFixed(4)}</div>
+          <div><b>Longitude:</b> ${Number(lng).toFixed(4)}</div>
+          <div><b>Stage:</b> ${project.acquisition_stage ?? '—'}</div>
+          <div><b>District:</b> ${project.district ?? '—'}</div>
+        </div>
+      `);
       marker.on('click', () => onSelectProject?.(id));
       layer.addLayer(marker);
     });
 
-    markerLayerRef.current = layer;
+    projectLayerRef.current = layer;
     map.addLayer(layer);
-    return () => {
-      layer.clearLayers();
-      if (map.hasLayer(layer)) map.removeLayer(layer);
-      if (markerLayerRef.current === layer) markerLayerRef.current = null;
-    };
   }, [projects, selectedProjectId, selectedRisk, showProjects, onSelectProject]);
 
   useEffect(() => {
@@ -229,156 +228,101 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     const L = window.L;
     if (!map || !L || !selectedProject) return;
 
-    if (parcelLayerRef.current) {
-      parcelLayerRef.current.forEach(layer => map.removeLayer(layer));
-      parcelLayerRef.current = null;
-    }
+    parcelLayerRef.current.forEach(layer => map.removeLayer(layer));
+    parcelLayerRef.current = [];
     if (!showParcels) return;
 
+    const baseline = Number.isFinite(Number(baselineRisk)) ? Number(baselineRisk) : selectedScore;
+    const simulated = Number.isFinite(Number(selectedRisk)) ? Number(selectedRisk) : baseline;
     const layers = [];
-    const base = Number.isFinite(Number(baselineRisk)) ? Number(baselineRisk) : selectedScore;
-    const simulated = Number.isFinite(Number(selectedRisk)) ? Number(selectedRisk) : base;
-    const geometry = parcelGeometry;
 
-    geometry.forEach((shape, index) => {
+    parcelGeometry.forEach((shape, index) => {
       const parcel = parcels[index] || {};
-      const risk = Math.max(0, Math.min(100, selectedScore));
-      const color = riskColor(risk);
       const polygon = L.polygon(shape.positions, {
-        color,
-        weight: index === 0 ? 3 : 2,
-        fillColor: color,
-        fillOpacity: 0.20,
-        dashArray: '6 5',
+        color: riskColor(selectedScore),
+        weight: index === 0 ? 2.5 : 1.5,
+        fillColor: riskColor(selectedScore),
+        fillOpacity: 0.10,
+        dashArray: '5 5',
       });
-      const status = parcel.status || selectedProject.compensation_status || 'Project-level status';
-      const legal = parcel.legalDispute ?? selectedProject.legal_disputes ?? 0;
       polygon.bindTooltip(shape.id, { permanent: true, direction: 'center', className: 'cadastral-label' });
       polygon.bindPopup(`
-        <div style="min-width:210px">
-          <strong>${shape.id}</strong><br/>
-          <span>Prototype parcel • ${selectedProject.project_id ?? selectedProject.id}</span><hr/>
-          <strong>Project risk:</strong> ${risk.toFixed(0)}/100 (${riskLevel(risk)})<br/>
-          <strong>Compensation:</strong> ${status}<br/>
-          <strong>Legal disputes:</strong> ${legal}<br/>
-          <strong>What-If:</strong> ${simulated.toFixed(0)}/100<br/>
-          <em>Illustrative geometry aligned to the project's dataset coordinate; not an official cadastral boundary.</em>
-        </div>`);
+        <div style="min-width:200px;font-family:Arial,sans-serif;font-size:12px;line-height:1.5">
+          <b>${shape.id}</b><br/>
+          Project: ${selectedProject.project_id ?? selectedProject.id}<br/>
+          Risk: ${selectedScore.toFixed(0)}/100 (${riskLevel(selectedScore)})<br/>
+          Compensation: ${parcel.status || selectedProject.compensation_status || '—'}<br/>
+          What-If: ${simulated.toFixed(0)}/100<br/>
+          <em>Prototype cadastral geometry aligned to the project coordinate.</em>
+        </div>
+      `);
       polygon.on('click', () => onSelectProject?.(selectedProject.project_id ?? selectedProject.id));
       polygon.addTo(map);
       layers.push(polygon);
     });
 
-    const anchor = L.circleMarker(selectedCenter, {
-      radius: 7,
-      color: '#2563eb',
-      fillColor: '#2563eb',
-      fillOpacity: 0.95,
-      weight: 3,
-    });
-    anchor.bindTooltip('Selected project', { direction: 'top', offset: [0, -8] });
-    anchor.bindPopup(`<strong>${selectedProject.project_id ?? selectedProject.id}</strong><br/>GIS ↔ cadastral alignment anchor`);
-    anchor.addTo(map);
-    layers.push(anchor);
-
-    // A short project corridor gives the parcels a meaningful acquisition context without claiming an official alignment.
-    const corridor = L.polyline([
-      [selectedCenter[0] - 0.0024, selectedCenter[1] - 0.006],
-      [selectedCenter[0] - 0.001, selectedCenter[1] - 0.002],
-      [selectedCenter[0] + 0.0005, selectedCenter[1] + 0.002],
-      [selectedCenter[0] + 0.0024, selectedCenter[1] + 0.006],
-    ], { color: '#2563eb', weight: 5, opacity: 0.55, dashArray: '10 8' });
-    corridor.bindTooltip('Prototype acquisition corridor', { sticky: true });
-    corridor.bindPopup('<strong>Prototype acquisition corridor</strong><br/><em>Illustrative project footprint; replace with official alignment geometry when available.</em>');
-    corridor.addTo(map);
-    layers.push(corridor);
-
     parcelLayerRef.current = layers;
-    map.setView(selectedCenter, 13, { animate: true });
-    return () => {
-      layers.forEach(layer => map.removeLayer(layer));
-      if (parcelLayerRef.current === layers) parcelLayerRef.current = null;
-    };
+    map.setView(selectedCenter, 12, { animate: true });
   }, [selectedProject, selectedCenter, selectedScore, selectedRisk, baselineRisk, parcels, parcelGeometry, showParcels, onSelectProject]);
 
-  const stats = {
-    projects: projects.length,
-    high: projects.filter(project => getRisk(project) >= 70).length,
-    medium: projects.filter(project => getRisk(project) >= 40 && getRisk(project) < 70).length,
-    low: projects.filter(project => getRisk(project) < 40).length,
-  };
+  const stats = useMemo(() => {
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    projects.forEach(project => {
+      const score = riskScore(project, selectedProjectId, undefined);
+      if (score >= 70) high += 1;
+      else if (score >= 40) medium += 1;
+      else low += 1;
+    });
+    return { high, medium, low };
+  }, [projects, selectedProjectId]);
+
   const hasSimulation = Number.isFinite(Number(selectedRisk)) && Number.isFinite(Number(baselineRisk));
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-4 py-3">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 px-4 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <div className="flex items-center gap-2 font-bold text-slate-900">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
               <MapPin className="h-4 w-4 text-blue-600" />
-              Land Acquisition Intelligence Map
+              Land parcels and their acquisition risk
             </div>
-            <p className="mt-0.5 text-[11px] text-slate-500">Project locations • acquisition corridor • prototype parcel overlay • risk intelligence</p>
+            <p className="mt-0.5 text-[10px] text-slate-500">OpenStreetMap • dataset coordinates • project risk visualization</p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={() => setShowProjects(value => !value)} className={`rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold ${showProjects ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => setShowProjects(v => !v)} className={`rounded-full border px-2.5 py-1 text-[9px] font-semibold ${showProjects ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
               <Layers className="mr-1 inline h-3 w-3" /> Projects
             </button>
-            <button type="button" onClick={() => setShowParcels(value => !value)} className={`rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold ${showParcels ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
-              <Route className="mr-1 inline h-3 w-3" /> Parcels + corridor
+            <button type="button" onClick={() => setShowParcels(v => !v)} className={`rounded-full border px-2.5 py-1 text-[9px] font-semibold ${showParcels ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+              <Route className="mr-1 inline h-3 w-3" /> Cadastral
             </button>
-            {hasSimulation && <span className="rounded-lg bg-amber-50 px-2.5 py-1.5 text-[10px] font-bold text-amber-700">What-If active</span>}
+            {hasSimulation && <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[9px] font-semibold text-amber-700">What-If active</span>}
           </div>
         </div>
       </div>
 
       <div className="relative">
-        <div ref={mapRef} className="h-[500px] w-full" />
+        <div ref={mapRef} className="h-[360px] w-full" />
 
-        <div className="absolute left-4 top-4 z-[500] w-[220px] rounded-xl border border-white/80 bg-white/95 p-3 shadow-lg backdrop-blur">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Network overview</div>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            <div><div className="text-lg font-black text-slate-900">{stats.projects}</div><div className="text-[9px] text-slate-500">Projects mapped</div></div>
-            <div><div className="text-lg font-black text-rose-600">{stats.high}</div><div className="text-[9px] text-slate-500">High risk</div></div>
-            <div><div className="text-lg font-black text-amber-600">{stats.medium}</div><div className="text-[9px] text-slate-500">Medium risk</div></div>
-            <div><div className="text-lg font-black text-emerald-600">{stats.low}</div><div className="text-[9px] text-slate-500">Low risk</div></div>
+        <div className="absolute right-4 top-4 z-[500] rounded-lg border border-slate-200 bg-white/95 px-3 py-2.5 shadow-md backdrop-blur">
+          <div className="text-[12px] font-bold text-slate-900">Risk Level</div>
+          <div className="mt-1.5 space-y-1.5 text-[11px] text-slate-700">
+            <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full" style={{ background: '#19b979' }} />Low Risk</div>
+            <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full" style={{ background: '#e8a923' }} />Medium Risk</div>
+            <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full" style={{ background: '#ef3340' }} />High Risk</div>
           </div>
         </div>
 
-        {selectedProject && (
-          <div className="absolute bottom-4 left-4 z-[500] w-[280px] rounded-xl border border-slate-200 bg-slate-950/95 p-3 text-white shadow-xl">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Selected project</div>
-                <div className="mt-0.5 font-mono text-sm font-black">{selectedProject.project_id ?? selectedProject.id}</div>
-                <div className="text-[10px] text-slate-300">{selectedProject.district}, {selectedProject.state}</div>
-              </div>
-              <div className="rounded-lg px-2 py-1 text-right" style={{ background: `${riskColor(selectedScore)}22`, color: riskColor(selectedScore) }}>
-                <div className="text-lg font-black leading-none">{selectedScore.toFixed(0)}</div>
-                <div className="text-[8px] font-bold uppercase">{selectedCategory}</div>
-              </div>
-            </div>
-            <div className="mt-3 grid grid-cols-3 gap-2 border-t border-white/10 pt-2 text-[9px]">
-              <div><span className="text-slate-500">Area</span><br/><b>{selectedProject.land_area_acres ?? '—'} ac</b></div>
-              <div><span className="text-slate-500">Legal</span><br/><b>{selectedProject.legal_disputes ?? '—'}</b></div>
-              <div><span className="text-slate-500">Stage</span><br/><b>{selectedProject.acquisition_stage ?? '—'}</b></div>
-            </div>
-          </div>
-        )}
-
-        <div className="absolute right-4 top-4 z-[500] rounded-xl border border-white/80 bg-white/95 p-3 shadow-lg backdrop-blur">
-          <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Risk layers</div>
-          <div className="mt-2 space-y-1.5 text-[9px] text-slate-600">
-            <div><span className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-rose-600" />High ≥ 70</div>
-            <div><span className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-amber-600" />Medium 40–69</div>
-            <div><span className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-emerald-600" />Low &lt; 40</div>
-          </div>
+        <div className="absolute bottom-2 left-3 z-[500] rounded-md bg-white/90 px-2 py-1 text-[9px] text-slate-500 shadow-sm">
+          {projects.length} projects • <span className="text-rose-600">{stats.high} high</span> • <span className="text-amber-600">{stats.medium} medium</span> • <span className="text-emerald-600">{stats.low} low</span>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-4 py-2 text-[10px] text-slate-500">
-        <span><MousePointer2 className="mr-1 inline h-3 w-3" />Click a project or parcel to inspect acquisition risk.</span>
-        <span>{selectedHasOfficialCoordinates ? 'Dataset coordinate' : 'Fallback coordinate'} • Prototype cadastral geometry</span>
+      <div className="flex items-center justify-between gap-2 border-t border-slate-200 px-4 py-1.5 text-[9px] text-slate-500">
+        <span>Click a marker to inspect land parcel risk and coordinate details.</span>
+        <span>{selectedProject && hasValidCoordinates(selectedProject) ? 'Dataset coordinate' : 'Prototype fallback coordinate'} • Prototype cadastral overlay</span>
       </div>
     </section>
   );
