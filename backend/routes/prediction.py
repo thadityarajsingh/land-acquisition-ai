@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from backend.services.prediction_service import predict_project
 from backend.services.explainability_service import explain_single_prediction
@@ -11,6 +11,10 @@ router = APIRouter(prefix="/predict", tags=["Prediction"])
 
 
 class PredictionRequest(BaseModel):
+    # Keep the existing API fields for frontend compatibility while allowing
+    # the expanded dataset features to be passed through when available.
+    model_config = ConfigDict(extra="allow")
+
     land_area_acres: Optional[float] = None
     affected_families: Optional[int] = None
     approval_delay_days: Optional[int] = None
