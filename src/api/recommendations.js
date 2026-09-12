@@ -7,12 +7,14 @@ function normalizeRecommendations(items = []) {
     return {
       id: `REC-${String(index + 1).padStart(2, '0')}`,
       title: item,
-      authority: 'Land Acquisition Administration',
-      impactEstimate: 'Model-derived action',
-      timeframe: 'Immediate',
-      statutoryRef: 'Project risk mitigation workflow',
+      authority: 'Project coordination team',
+      impactEstimate: 'Risk-focused action',
+      timeframe: 'Near term',
+      statutoryRef: 'Rule-based risk factor',
       urgency: index === 0 ? 'CRITICAL' : 'HIGH',
       description: item,
+      action: item,
+      basis: 'Recorded project risk factor',
     };
   });
 }
