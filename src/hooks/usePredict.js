@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { predictRisk, explainRisk } from '../api/predict';
-import { MOCK_PROJECT_DATA } from '../mockData';
 
 const FEATURE_LABELS = {
   land_area_acres: 'Land Area',
@@ -15,15 +14,10 @@ const FEATURE_LABELS = {
 };
 
 function formatFeatureName(feature) {
-  const [base, value] = feature.split('_', 2);
   if (FEATURE_LABELS[feature]) return FEATURE_LABELS[feature];
-
   const known = Object.keys(FEATURE_LABELS).find(key => feature.startsWith(`${key}_`));
   if (known) return `${FEATURE_LABELS[known]}: ${feature.slice(known.length + 1)}`;
-
-  return feature
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, char => char.toUpperCase());
+  return feature.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 }
 
 function toDrivers(topFactors = {}) {
@@ -34,9 +28,7 @@ function toDrivers(topFactors = {}) {
       impact,
       displayImpact: `${impact >= 0 ? '+' : ''}${impact} pts`,
       direction: impact >= 0 ? 'up' : 'down',
-      category: feature.includes('legal') || feature.includes('dispute')
-        ? 'Legal / Judicial'
-        : 'Model Feature',
+      category: feature.includes('legal') || feature.includes('dispute') ? 'Legal / Judicial' : 'Model Feature',
       description: 'SHAP contribution to this project prediction.',
     };
   });
@@ -74,7 +66,6 @@ export function usePredict(projectData) {
       try {
         setLoading(true);
         setError(null);
-
         const result = await predictRisk(payload);
         let drivers = [];
 
@@ -85,10 +76,6 @@ export function usePredict(projectData) {
           console.warn('[BhoomiIQ API] SHAP explanation unavailable:', explainError.message);
         }
 
-        if (drivers.length === 0) {
-          drivers = MOCK_PROJECT_DATA.drivers;
-        }
-
         setPrediction({
           ...result,
           riskScore: Math.round(Number(result.risk_score) * 100),
@@ -97,6 +84,7 @@ export function usePredict(projectData) {
         });
       } catch (err) {
         console.error('[BhoomiIQ API] Prediction failed:', err);
+        setPrediction(null);
         setError(err.message);
       } finally {
         setLoading(false);
