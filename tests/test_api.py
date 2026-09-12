@@ -1,29 +1,11 @@
 from fastapi.testclient import TestClient
 
 from backend.main import app
+from ml.preprocess import NUMERIC_FEATURES, CATEGORICAL_FEATURES
 
 
 client = TestClient(app)
-
-FEATURE_KEYS = [
-    "land_area_acres",
-    "affected_families",
-    "approval_delay_days",
-    "legal_disputes",
-    "rehab_progress_pct",
-    "stakeholder_responsiveness_pct",
-    "historical_performance_score",
-    "departments_involved",
-    "historical_delay_count",
-    "state",
-    "district",
-    "project_type",
-    "compensation_status",
-    "possession_status",
-    "documentation_status",
-    "notification_status",
-    "acquisition_stage",
-]
+FEATURE_KEYS = NUMERIC_FEATURES + CATEGORICAL_FEATURES
 
 
 def project_features(project):
@@ -52,11 +34,14 @@ def test_projects_returns_real_dataset():
     assert data["projects"][0]["project_id"].startswith("LA-")
 
 
-def test_project_detail():
+def test_project_detail_includes_expanded_features():
     data = get_project()
     assert data["project_id"] == "LA-0001"
     assert "land_area_acres" in data
     assert "legal_disputes" in data
+    assert "green_zone_pct" in data
+    assert "title_verification_status" in data
+    assert "flood_risk" in data
 
 
 def test_missing_project_returns_404():
@@ -64,7 +49,7 @@ def test_missing_project_returns_404():
     assert response.status_code == 404
 
 
-def test_prediction_contract():
+def test_prediction_contract_with_expanded_features():
     project = get_project()
     response = client.post("/predict", json=project_features(project))
 
