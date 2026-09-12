@@ -220,13 +220,13 @@ export function Sidebar({
     </div>
   );
 
-  // ALWAYS SLIDING WINDOW (DRAWER OVERLAY FROM HEADER TO FOOTER)
+  // ALWAYS SLIDING WINDOW (DRAWER OVERLAY FROM HEADER TO FOOTER FULL HEIGHT)
   return (
     <>
       {/* Backdrop overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 transition-opacity animate-in fade-in duration-200"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[10500] transition-opacity animate-in fade-in duration-200"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -234,7 +234,7 @@ export function Sidebar({
 
       {/* Sliding Window Drawer (from Header to Footer full height) */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-80 bg-[#080D1A] z-50 border-r border-slate-800 shadow-2xl transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed top-0 left-0 bottom-0 w-80 bg-[#080D1A] z-[11000] border-r border-slate-800 shadow-2xl transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         aria-label="Statutory navigation drawer"
