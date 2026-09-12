@@ -1,5 +1,4 @@
 import apiClient from './client';
-import { MOCK_PROJECTS, MOCK_PROJECT_DATA } from '../mockData';
 
 function normalizeProject(project) {
   if (!project) return project;
@@ -10,6 +9,10 @@ function normalizeProject(project) {
     name: `${project.project_type} Land Acquisition — ${project.district}`,
     corridor: project.project_type,
     district: `${project.district}, ${project.state}`,
+    riskScore: Number.isFinite(Number(project.risk_score))
+      ? Number(project.risk_score) * 100
+      : undefined,
+    riskCategory: project.risk_category,
   };
 }
 
@@ -49,29 +52,14 @@ function normalizeProjectDetails(project) {
 }
 
 export async function fetchProjects() {
-  try {
-    const response = await apiClient.get('/projects');
-    const projects = response.data?.projects || [];
-    return projects.map(normalizeProject);
-  } catch (error) {
-    console.warn('[BhoomiIQ API] Fallback to mock projects list:', error.message);
-    return MOCK_PROJECTS;
-  }
+  const response = await apiClient.get('/projects');
+  const projects = response.data?.projects || [];
+  if (!projects.length) throw new Error('Backend returned no projects');
+  return projects.map(normalizeProject);
 }
 
 export async function fetchProjectById(projectId) {
-  try {
-    const response = await apiClient.get(`/projects/${projectId}`);
-    return normalizeProjectDetails(response.data);
-  } catch (error) {
-    console.warn(`[BhoomiIQ API] Fallback to mock project details for ${projectId}:`, error.message);
-    const found = MOCK_PROJECTS.find(p => p.id === projectId);
-    return {
-      ...MOCK_PROJECT_DATA,
-      id: projectId,
-      name: found ? found.name : MOCK_PROJECT_DATA.name,
-      corridor: found ? found.corridor : MOCK_PROJECT_DATA.corridor,
-      riskScore: found ? found.baseRiskScore : MOCK_PROJECT_DATA.riskScore,
-    };
-  }
+  const response = await apiClient.get(`/projects/${projectId}`);
+  if (!response.data) throw new Error(`Project ${projectId} was not returned by the backend`);
+  return normalizeProjectDetails(response.data);
 }
