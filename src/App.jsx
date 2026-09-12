@@ -43,13 +43,14 @@ export function App() {
 
   return (
     <div className="h-screen overflow-hidden bg-[#F8FAFC] flex flex-col font-sans relative">
-      <div className="relative z-50 shrink-0">
+      {/* Keep navigation/popovers in a higher stacking context than Leaflet's internal panes. */}
+      <div className="relative z-[10000] shrink-0">
         <TopNav projects={projects} selectedProjectId={selectedProjectId} onSelectProject={handleProjectSelect} searchQuery={searchQuery} onSearchChange={setSearchQuery} currentUser={currentUser} onLogout={handleLogout} onToggleSidebar={() => setIsSidebarOpen(prev => !prev)} isSidebarOpen={isSidebarOpen} onSelectTab={setActiveTab} onReturnToTop={() => { setActiveTab("cadastral"); document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' }); }} />
       </div>
-      {!isSidebarOpen && <button type="button" onClick={() => setIsSidebarOpen(true)} className="fixed left-0 top-1/2 -translate-y-1/2 bg-[#080D1A] hover:bg-slate-800 text-slate-400 hover:text-white border border-l-0 border-slate-700/80 px-1.5 py-3.5 rounded-r-xl shadow-xl z-30 transition-all duration-150 group flex flex-col items-center gap-1.5 cursor-pointer" title="Open Modules"><PanelLeft className="w-4 h-4 text-[#F97316]" /><span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 [writing-mode:vertical-rl] rotate-180">Modules</span></button>}
-      <div className="flex flex-1 min-h-0 overflow-hidden relative">
+      {!isSidebarOpen && <button type="button" onClick={() => setIsSidebarOpen(true)} className="fixed left-0 top-1/2 -translate-y-1/2 bg-[#080D1A] hover:bg-slate-800 text-slate-400 hover:text-white border border-l-0 border-slate-700/80 px-1.5 py-3.5 rounded-r-xl shadow-xl z-[9000] transition-all duration-150 group flex flex-col items-center gap-1.5 cursor-pointer" title="Open Modules"><PanelLeft className="w-4 h-4 text-[#F97316]" /><span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 [writing-mode:vertical-rl] rotate-180">Modules</span></button>}
+      <div className="flex flex-1 min-h-0 overflow-hidden relative z-0">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} projectData={projectData} currentUser={currentUser} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-        <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F8FAFC]">
+        <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F8FAFC] relative z-0 isolate">
           <div className="max-w-[1600px] mx-auto space-y-5">
             {isLoading ? <DashboardSkeleton /> : backendError ? (
               <section className="rounded-2xl border border-rose-200 bg-white p-8 shadow-sm">
