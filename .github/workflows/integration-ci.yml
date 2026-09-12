@@ -1,10 +1,10 @@
-name: Integration CI
+name: Main CI
 
 on:
   push:
-    branches: [develop, integration]
+    branches: [main]
   pull_request:
-    branches: [develop]
+    branches: [main]
 
 jobs:
   frontend-build:
