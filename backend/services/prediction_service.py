@@ -7,17 +7,17 @@ FEATURE_COLUMNS = NUMERIC_FEATURES + CATEGORICAL_FEATURES
 
 
 def _category(probability: float) -> str:
-    if probability < 0.33:
+    if probability < 0.40:
         return "Low"
-    if probability < 0.66:
+    if probability < 0.70:
         return "Medium"
     return "High"
 
 
 def _feature_row(features: dict) -> pd.DataFrame:
     # Build the exact schema expected by the retrained pipeline. Missing
-    # expanded features are intentionally left as None so the pipeline's
-    # imputers handle them consistently.
+    # features are intentionally left as None so the pipeline imputers
+    # handle them consistently.
     return pd.DataFrame(
         [{column: features.get(column) for column in FEATURE_COLUMNS}],
         columns=FEATURE_COLUMNS,
