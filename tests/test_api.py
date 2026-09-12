@@ -81,12 +81,10 @@ def test_prediction_explainability_contract():
 
     assert response.status_code == 200
     factors = response.json()["top_factors"]
-    assert isinstance(factors, list)
+    assert isinstance(factors, dict)
     assert len(factors) > 0
-
-    first = factors[0]
-    assert "feature" in first
-    assert "shap_value" in first
+    assert all(isinstance(key, str) for key in factors)
+    assert all(isinstance(value, (int, float)) for value in factors.values())
 
 
 def test_what_if_uses_same_prediction_pipeline():
