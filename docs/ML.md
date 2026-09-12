@@ -6,7 +6,9 @@ The ML layer estimates the likelihood that a land-acquisition project will be de
 
 ## Dataset
 
-The current prototype uses `ml/sih26017_synthetic_land_acquisition_dataset.csv`.
+The current prototype starts from `ml/sih26017_synthetic_land_acquisition_dataset.csv` and deterministically expands it with `ml/expand_dataset.py` when the enhanced dataset is needed.
+
+The source dataset contains 1,200 rows: 339 delayed and 861 non-delayed records. The added fields are **synthetic prototype features** and are not official cadastral or government records.
 
 The target is:
 
@@ -14,38 +16,30 @@ The target is:
 is_delayed
 ```
 
-The preprocessing intentionally excludes:
+The preprocessing excludes:
 
 - `is_delayed` — the target being predicted
 - `delay_days` — directly encodes the outcome and would leak target information
 - `project_id` — identifier only
+- other outcome/post-outcome fields such as `risk_score_demo`, `risk_band_demo`, `data_status`, and `provenance_note`
 
-The current evaluation contains 1,200 rows: 339 delayed and 861 non-delayed records.
+## Prediction-time feature schema
 
-## Features
+The current leakage-safe prediction schema contains **68 features: 36 numeric and 32 categorical**. The authoritative lists are defined in `ml/preprocess.py` and are reused by backend inference, explainability, tests, and the frontend payload builders.
 
-### Numeric
+The expanded feature groups cover:
 
-- `land_area_acres`
-- `affected_families`
-- `approval_delay_days`
-- `legal_disputes`
-- `rehab_progress_pct`
-- `stakeholder_responsiveness_pct`
-- `historical_performance_score`
-- `departments_involved`
-- `historical_delay_count`
+- project/location and acquisition indicators;
+- green-zone and environmental constraints;
+- GIS/spatial context;
+- land use and agriculture;
+- social impact;
+- ownership and legal status;
+- administration and approvals;
+- financial/compensation indicators;
+- infrastructure and natural hazards.
 
-### Categorical
-
-- `state`
-- `district`
-- `project_type`
-- `compensation_status`
-- `possession_status`
-- `documentation_status`
-- `notification_status`
-- `acquisition_stage`
+This expanded schema is still synthetic until authoritative source data is ingested.
 
 ## Preprocessing
 
@@ -58,41 +52,39 @@ The fitted pipeline must be used for inference so training and serving transform
 
 ## Model training
 
-`ml/train.py`:
+The training pipeline:
 
 1. Loads and cleans the dataset.
 2. Performs a stratified 80/20 train/test split with `random_state=42`.
-3. Fits the preprocessing pipeline on training data.
-4. Trains a balanced RandomForest baseline.
+3. Fits the preprocessing pipeline on training data only.
+4. Trains a RandomForest baseline.
 5. Trains XGBoost with `scale_pos_weight` based on the training class ratio.
-6. Evaluates both models.
+6. Evaluates both models on the held-out split.
 7. Persists the selected XGBoost model and preprocessing pipeline as joblib artifacts.
 
-The selected model is XGBoost because it detects the delayed class on the held-out evaluation split, unlike the RandomForest baseline at its default decision threshold.
+The backend also validates the saved pipeline feature schema and can retrain a compatible prototype model when stale/incompatible artifacts are detected.
 
 ## Risk score
 
 The backend obtains the probability of the delayed class using `predict_proba`.
 
-Provisional categories:
+The dashboard uses these provisional presentation bands:
 
-| Probability | Category |
+| Score / probability | Category |
 |---:|---|
-| `< 0.33` | Low |
-| `0.33–<0.66` | Medium |
-| `>= 0.66` | High |
+| `< 0.40` | Low |
+| `0.40–<0.70` | Medium |
+| `>= 0.70` | High |
 
-These thresholds are demonstration thresholds, not calibrated probability bands.
+These are demonstration thresholds, **not calibrated probability bands**.
 
-The frontend displays the probability as a percentage-style score from 0 to 100.
+The frontend displays the probability as a 0–100 score.
 
 ## Explainability
 
 `backend/services/explainability_service.py` uses SHAP `TreeExplainer` on the trained tree model after applying the fitted preprocessing pipeline.
 
-The API returns the largest absolute SHAP contributions for a single prediction.
-
-SHAP values describe model contribution; they do not prove that a feature caused a delay.
+The API returns the largest absolute SHAP contributions for a single prediction. SHAP values describe model contribution; they do not prove that a feature caused a real-world delay.
 
 ## What-If model
 
@@ -105,22 +97,37 @@ scenario features -> model -> scenario risk
 
 The difference is reported as the scenario risk change. The prototype also derives a model-based delay comparison from the risk scores. This is a scenario estimate, not a guaranteed operational outcome.
 
-## Current evaluation
+## Current leakage-safe evaluation
 
-From `ml/MODEL_EVALUATION.md`:
+A fresh local evaluation using the current 68 prediction features and the leakage-safe pipeline produced:
 
-| Model | Accuracy | Weighted F1 | Delayed Precision | Delayed Recall | Delayed F1 | ROC-AUC | Average Precision |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| RandomForest (balanced) | 0.7083 | 0.5943 | 0.0000 | 0.0000 | 0.0000 | 0.5077 | 0.2962 |
-| XGBoost (selected) | 0.6708 | 0.6551 | 0.3922 | 0.2941 | 0.3361 | 0.5729 | 0.3756 |
+| Metric | XGBoost selected model |
+|---|---:|
+| Accuracy | 0.6333 |
+| Weighted F1 | 0.5925 |
+| Delayed Precision | 0.2222 |
+| Delayed Recall | 0.1176 |
+| Delayed F1 | 0.1538 |
+| ROC-AUC | 0.5300 |
+| Average Precision | 0.3131 |
 
-The delayed-class recall is currently 29.41% on the held-out split.
+Held-out confusion matrix:
+
+```text
+                 Predicted
+                 0     1
+Actual 0       144    28
+Actual 1        60     8
+```
+
+Only 8 of 68 delayed records were identified in this fresh evaluation. This confirms that the model is a **prototype decision-support model with weak predictive signal**, not a production-grade predictor.
 
 ## Limitations
 
-- The dataset is synthetic prototype data, not official government records.
-- Predictive signal is limited by the current feature set and dataset.
-- Delayed-class recall is modest.
+- The dataset and expanded fields are synthetic prototype data, not official government records.
+- Predictive signal is limited and delayed-class recall is currently low.
 - Risk categories are not calibrated probabilities.
+- Synthetic feature correlations should not be interpreted as causal relationships.
+- Model performance may change materially on authoritative historical data.
 - Model outputs should support human prioritization, not replace legal/administrative judgment.
-- Model performance must be re-evaluated on representative historical data before production decision-making.
+- Production use requires representative historical data, calibration, regional validation, governance, privacy/security review, and monitoring.
