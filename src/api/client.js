@@ -10,7 +10,9 @@ const apiBaseUrl = import.meta.env.VITE_API_URL ||
 
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
-  timeout: 10000,
+  // Render cold starts can take longer than a local API. Keep the UI tolerant
+  // of the first request while the backend process and model are warming up.
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
