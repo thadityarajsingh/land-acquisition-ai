@@ -8,9 +8,7 @@ The GIS module provides a geographic view of project locations and a project-lev
 
 The primary component is:
 
-```text
-src/components/dashboard/GISMap.jsx
-```
+`src/components/dashboard/GISMap.jsx`
 
 The application also contains a cadastral register component for parcel information.
 
@@ -23,6 +21,8 @@ The GIS map dynamically loads:
 ## GIS dataset
 
 The map loads `/gis-demo.csv` from the frontend public assets and builds an in-memory district index. Coordinates are filtered to an India bounding box before they can be used.
+
+The cleaned demo CSV now contains one reference point per demo project location rather than three artificially offset points. The coordinates are labelled as reference/demo data and are **not parcel-level survey coordinates**.
 
 Backend project records are joined to the GIS dataset by normalized state + district + project type, then by normalized state + district. This prevents synthetic backend coordinates from relocating a project to an unrelated place.
 
@@ -38,6 +38,8 @@ District normalization removes spaces/non-alphanumeric characters and trailing `
 The GIS reference dataset is preferred when a state/district match exists. Backend latitude/longitude is used only when it is valid, non-synthetic, and no GIS district match exists.
 
 If coordinates are missing, synthetic, or invalid, the component uses a state-level reference center. These fallback centers are visualization aids and are **not cadastral boundaries or surveyed coordinates**.
+
+The pilot Mathura reference row is labelled as an official UP GeoDashboard reference, but it is still a district reference point, not an individual parcel location.
 
 ## Project markers
 
@@ -62,10 +64,6 @@ The map renders parcel boundaries only from `public/cadastral.geojson` when that
 No parcel polygons are generated from a project point, area, or random offsets. If authoritative geometry is unavailable, parcels remain unmapped rather than being presented as cadastral boundaries.
 
 The cadastral register no longer creates demo parcel records. It displays only supplied parcel records.
-
-## Search and interaction
-
-The GIS map clusters project markers, keeps the map constrained to the India region, fits the initial view to the project set, and lets users locate the selected project. Clicking a project marker selects the corresponding backend project.
 
 ## Data quality requirements for a real deployment
 
