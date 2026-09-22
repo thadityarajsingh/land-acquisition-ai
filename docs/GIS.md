@@ -57,9 +57,11 @@ When a selected project has a simulated score, the GIS layer uses that score for
 
 ## Parcel geometry
 
-The map no longer invents parcel polygons when geometry is absent. Cadastral records can still be shown in the register, but polygon rendering requires actual parcel geometry from the backend.
+The map renders parcel boundaries only from `public/cadastral.geojson` when that file is present and contains a GeoJSON `FeatureCollection`. Features should carry a `project_id`/`projectId` and optional `gutNo`/`parcel_id` property for project selection and popups.
 
-The cadastral register explicitly identifies demo geometry when official cadastral parcel boundaries are unavailable.
+No parcel polygons are generated from a project point, area, or random offsets. If authoritative geometry is unavailable, parcels remain unmapped rather than being presented as cadastral boundaries.
+
+The cadastral register no longer creates demo parcel records. It displays only supplied parcel records.
 
 ## Search and interaction
 
@@ -75,6 +77,7 @@ For official use, replace prototype GIS inputs with authoritative geospatial dat
 - coordinate reference system metadata
 - authoritative administrative boundaries
 - source/version/date metadata
+- GeoJSON FeatureCollection in `public/cadastral.geojson` for the pilot geometry layer
 
 Do not present state-level fallback points or generated polygons as official cadastral geometry.
 
