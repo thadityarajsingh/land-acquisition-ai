@@ -300,18 +300,18 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
   const hasSimulation = Number.isFinite(Number(selectedRisk)) && Number.isFinite(Number(baselineRisk));
 
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-4 py-2.5">
+    <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
+      <div className="border-b border-slate-100 px-5 py-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-              <MapPin className="h-4 w-4 text-blue-600" />
+            <div className="flex items-center gap-2 text-base font-bold text-slate-900">
+              <MapPin className="h-4 w-4 text-[#F97316]" />
               Land parcels and their acquisition risk
             </div>
             <p className="mt-0.5 text-[10px] text-slate-500">OpenStreetMap • dataset coordinates • spatial risk visualization</p>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setShowProjects(v => !v)} className={`rounded-full border px-2.5 py-1 text-[9px] font-semibold ${showProjects ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+            <button type="button" onClick={() => setShowProjects(v => !v)} className={`rounded-full border px-2.5 py-1 text-[9px] font-semibold ${showProjects ? 'border-orange-200 bg-orange-50 text-[#C2410C]' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
               <Layers className="mr-1 inline h-3 w-3" /> Projects
             </button>
             <button type="button" onClick={() => setShowParcels(v => !v)} className={`rounded-full border px-2.5 py-1 text-[9px] font-semibold ${showParcels ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
@@ -323,8 +323,8 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       </div>
 
       <div className="relative">
-        <div ref={mapRef} className="h-[360px] w-full" />
-        <div className="absolute right-4 top-4 z-[500] rounded-lg border border-slate-200 bg-white/95 px-3 py-2.5 shadow-md backdrop-blur">
+        <div ref={mapRef} className="h-[390px] w-full" />
+        <div className="absolute right-4 top-4 z-[500] rounded-2xl border border-slate-200 bg-white/95 px-3 py-2.5 shadow-md backdrop-blur">
           <div className="text-[12px] font-bold text-slate-900">Risk Level</div>
           <div className="mt-1.5 space-y-1.5 text-[11px] text-slate-700">
             <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full" style={{ background: '#19b979' }} />Low Risk</div>
@@ -332,7 +332,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
             <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full" style={{ background: '#ef3340' }} />High Risk</div>
           </div>
         </div>
-        <div className="absolute bottom-2 left-3 z-[500] rounded-md bg-white/90 px-2 py-1 text-[9px] text-slate-500 shadow-sm">
+        <div className="absolute bottom-2 left-3 z-[500] rounded-xl bg-white/90 px-2 py-1 text-[9px] text-slate-500 shadow-sm">
           {projects.length} projects • <span className="text-rose-600">{stats.high} high</span> • <span className="text-amber-600">{stats.medium} medium</span> • <span className="text-emerald-600">{stats.low} low</span>
         </div>
       </div>
