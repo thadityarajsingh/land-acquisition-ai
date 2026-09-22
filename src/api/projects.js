@@ -8,7 +8,8 @@ function normalizeProject(project) {
     id: project.project_id,
     name: `${project.project_type} Land Acquisition — ${project.district}`,
     corridor: project.project_type,
-    district: `${project.district}, ${project.state}`,
+    location: `${project.district}, ${project.state}`,
+    district: project.district,
     riskScore: Number.isFinite(Number(project.risk_score))
       ? Number(project.risk_score) * 100
       : undefined,
