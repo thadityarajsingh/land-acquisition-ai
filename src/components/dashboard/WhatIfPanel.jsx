@@ -61,10 +61,10 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Interactive Policy Simulator
+            DECISION SUPPORT
           </span>
           <h2 className="text-sm font-bold text-slate-800">
-            De-Risking Simulation Studio
+            What-If Simulation
           </h2>
         </div>
 
@@ -82,7 +82,7 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
       <div className="my-3.5 bg-slate-50 p-2 rounded-xl border border-slate-200/60 flex flex-wrap items-center justify-between gap-2">
         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 pl-1">
           <Zap className="w-3.5 h-3.5 text-[#F97316]" />
-          Demo Presets:
+          Quick scenarios
         </span>
         <div className="flex items-center gap-1.5">
           <button
@@ -158,7 +158,7 @@ export function WhatIfPanel({ defaults = {}, onRunSimulation, simulating = false
             ) : (
               <>
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Run What-If Simulation</span>
+                <span>Run Simulation</span>
               </>
             )}
           </button>

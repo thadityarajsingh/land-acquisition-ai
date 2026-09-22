@@ -7,13 +7,6 @@ function hasValidCoordinates(project) {
   return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
 }
 
-function isWithinIndia(project) {
-  const lat = Number(project?.latitude);
-  const lng = Number(project?.longitude);
-  return Number.isFinite(lat) && Number.isFinite(lng)
-    && lat >= 6.4 && lat <= 37.2 && lng >= 68.0 && lng <= 97.5;
-}
-
 function fallbackCoordinates(project) {
   const centers = {
     'Uttar Pradesh': [26.85, 80.95],
@@ -36,29 +29,8 @@ function getCenter(project) {
     : fallbackCoordinates(project);
 }
 
-function normalizeSearchValue(value) {
-  return String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
-function normalizeDistrict(value) {
-  return normalizeSearchValue(value).replace(/urban$|rural$/, '');
-}
-
-function parseCsv(csvText) {
-  const [headerLine, ...rows] = csvText.trim().split(/\r?\n/);
-  if (!headerLine) return [];
-  const headers = headerLine.split(',');
-  return rows.filter(Boolean).map(row => {
-    const values = row.split(',');
-    return headers.reduce((record, header, index) => {
-      record[header] = values[index] ?? '';
-      return record;
-    }, {});
-  });
-}
-
 function riskScore(project, selectedProjectId, selectedRisk) {
-  const id = project?.backendProjectId ?? project?.project_id ?? project?.id;
+  const id = project?.project_id ?? project?.id;
   if (id === selectedProjectId && Number.isFinite(Number(selectedRisk))) {
     return Math.max(0, Math.min(100, Number(selectedRisk)));
   }
@@ -85,7 +57,7 @@ function buildParcelGeometry(center, count = 6) {
     [[0.0007, 0.0037], [0.0030, 0.0015], [0.0037, 0.0040], [0.0032, 0.0047]],
   ];
   return templates.slice(0, count).map((points, index) => ({
-    id: `Plot ${index + 1}`,
+    id: `Prototype-${String.fromCharCode(65 + index)}`,
     positions: points.map(([dy, dx]) => [lat + dy, lng + dx]),
   }));
 }
@@ -136,7 +108,7 @@ async function ensureClusterAssets() {
   });
 }
 
-export function GISMap({ projects = [], selectedProjectId, onSelectProject, selectedRisk, baselineRisk, parcels = [], searchQuery = '' }) {
+export function GISMap({ projects = [], selectedProjectId, onSelectProject, selectedRisk, baselineRisk, parcels = [] }) {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const projectLayerRef = useRef(null);
@@ -144,65 +116,12 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
   const anchorLayerRef = useRef(null);
   const [showProjects, setShowProjects] = useState(true);
   const [showParcels, setShowParcels] = useState(true);
-  const [gisProjects, setGisProjects] = useState([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/gis-demo.csv')
-      .then(response => {
-        if (!response.ok) throw new Error('GIS dataset unavailable');
-        return response.text();
-      })
-      .then(csvText => {
-        if (!cancelled) setGisProjects(parseCsv(csvText));
-      })
-      .catch(() => {
-        if (!cancelled) setGisProjects([]);
-      });
-    return () => { cancelled = true; };
-  }, []);
 
   const selectedProject = useMemo(
     () => projects.find(project => (project.project_id ?? project.id) === selectedProjectId),
     [projects, selectedProjectId],
   );
-  const mapProjects = useMemo(() => {
-    if (!gisProjects.length) return projects;
-    const projectByLocation = new Map(
-      projects.map(project => [`${project.state}|${normalizeDistrict(project.district)}`, project]),
-    );
-    return gisProjects.filter(isWithinIndia).map(project => {
-      const matchingProject = projectByLocation.get(`${project.state}|${normalizeDistrict(project.district)}`)
-        || projects.find(item => item.state === project.state && item.project_type === project.project_type);
-      return {
-        ...project,
-        risk_score: matchingProject?.risk_score,
-        riskScore: matchingProject?.riskScore,
-        backendProjectId: matchingProject?.id,
-      };
-    });
-  }, [gisProjects, projects]);
-  const selectedMapProject = useMemo(() => {
-    if (!selectedProject || !gisProjects.length) return selectedProject;
-    const district = String(selectedProject.district).split(',')[0];
-    return gisProjects.find(project => project.state === selectedProject.state
-      && normalizeDistrict(project.district) === normalizeDistrict(district))
-      || gisProjects.find(project => project.state === selectedProject.state
-        && project.project_type === selectedProject.project_type)
-      || selectedProject;
-  }, [gisProjects, selectedProject]);
-  const visibleMapProjects = useMemo(() => {
-    const query = normalizeSearchValue(searchQuery);
-    if (!query) return mapProjects;
-    return mapProjects.filter(project => [
-      project.project_id,
-      project.backendProjectId,
-      project.district,
-      project.state,
-      project.project_type,
-    ].some(value => normalizeSearchValue(value).includes(query)));
-  }, [mapProjects, searchQuery]);
-  const selectedCenter = selectedMapProject ? getCenter(selectedMapProject) : [22.5, 78.9];
+  const selectedCenter = selectedProject ? getCenter(selectedProject) : [22.5, 78.9];
   const selectedScore = selectedProject ? riskScore(selectedProject, selectedProjectId, selectedRisk) : 0;
   const parcelGeometry = useMemo(
     () => buildParcelGeometry(selectedCenter, Math.max(5, Math.min(6, parcels.length || 6))),
@@ -217,16 +136,8 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
         await ensureClusterAssets();
         if (cancelled || !mapRef.current || mapInstance.current) return;
         const L = window.L;
-        const indiaBounds = [[6.4, 68.0], [37.2, 97.5]];
-        const map = L.map(mapRef.current, {
-          zoomControl: true,
-          preferCanvas: true,
-          attributionControl: true,
-          maxBounds: indiaBounds,
-          maxBoundsViscosity: 1.0,
-          minZoom: 4.5,
-        });
-        map.fitBounds(indiaBounds, { padding: [12, 12] });
+        const map = L.map(mapRef.current, { zoomControl: true, preferCanvas: true, attributionControl: true });
+        map.setView([22.5, 78.9], 5.2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors',
           maxZoom: 19,
@@ -270,8 +181,8 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     });
 
     const coordinateCounts = new Map();
-    visibleMapProjects.forEach(project => {
-      const id = project.backendProjectId || project.project_id || project.id;
+    projects.forEach(project => {
+      const id = project.project_id ?? project.id;
       const [lat, lng] = getCenter(project);
       const key = `${lat.toFixed(6)},${lng.toFixed(6)}`;
       const duplicateIndex = coordinateCounts.get(key) ?? 0;
@@ -298,15 +209,14 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
           <div><b>Longitude:</b> ${Number(lng).toFixed(4)}</div>
           <div><b>Stage:</b> ${project.acquisition_stage ?? '—'}</div>
           <div><b>District:</b> ${project.district ?? '—'}</div>
-          <div><b>GIS plot:</b> ${project.project_id ?? '—'}</div>
         </div>
       `);
-      marker.on('click', () => onSelectProject?.(project.backendProjectId || id));
+      marker.on('click', () => onSelectProject?.(id));
       layer.addLayer(marker);
     });
     projectLayerRef.current = layer;
     map.addLayer(layer);
-  }, [visibleMapProjects, selectedMapProject, selectedProjectId, selectedRisk, showProjects, onSelectProject]);
+  }, [projects, selectedProjectId, selectedRisk, showProjects, onSelectProject]);
 
   useEffect(() => {
     const map = mapInstance.current;
@@ -378,30 +288,30 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     let high = 0;
     let medium = 0;
     let low = 0;
-    visibleMapProjects.forEach(project => {
+    projects.forEach(project => {
       const score = riskScore(project, selectedProjectId, undefined);
       if (score >= 70) high += 1;
       else if (score >= 40) medium += 1;
       else low += 1;
     });
     return { high, medium, low };
-  }, [visibleMapProjects, selectedProjectId]);
+  }, [projects, selectedProjectId]);
 
   const hasSimulation = Number.isFinite(Number(selectedRisk)) && Number.isFinite(Number(baselineRisk));
 
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-4 py-2.5">
+    <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
+      <div className="border-b border-slate-100 px-5 py-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-              <MapPin className="h-4 w-4 text-blue-600" />
+            <div className="flex items-center gap-2 text-base font-bold text-slate-900">
+              <MapPin className="h-4 w-4 text-[#F97316]" />
               Land parcels and their acquisition risk
             </div>
             <p className="mt-0.5 text-[10px] text-slate-500">OpenStreetMap • dataset coordinates • spatial risk visualization</p>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setShowProjects(v => !v)} className={`rounded-full border px-2.5 py-1 text-[9px] font-semibold ${showProjects ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+            <button type="button" onClick={() => setShowProjects(v => !v)} className={`rounded-full border px-2.5 py-1 text-[9px] font-semibold ${showProjects ? 'border-orange-200 bg-orange-50 text-[#C2410C]' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
               <Layers className="mr-1 inline h-3 w-3" /> Projects
             </button>
             <button type="button" onClick={() => setShowParcels(v => !v)} className={`rounded-full border px-2.5 py-1 text-[9px] font-semibold ${showParcels ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
@@ -412,9 +322,9 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
         </div>
       </div>
 
-      <div className="relative z-0 isolate">
-        <div ref={mapRef} className="h-[360px] w-full" />
-        <div className="absolute right-4 top-4 z-[500] rounded-lg border border-slate-200 bg-white/95 px-3 py-2.5 shadow-md backdrop-blur">
+      <div className="relative">
+        <div ref={mapRef} className="h-[390px] w-full" />
+        <div className="absolute right-4 top-4 z-[500] rounded-2xl border border-slate-200 bg-white/95 px-3 py-2.5 shadow-md backdrop-blur">
           <div className="text-[12px] font-bold text-slate-900">Risk Level</div>
           <div className="mt-1.5 space-y-1.5 text-[11px] text-slate-700">
             <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full" style={{ background: '#19b979' }} />Low Risk</div>
@@ -422,14 +332,14 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
             <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full" style={{ background: '#ef3340' }} />High Risk</div>
           </div>
         </div>
-        <div className="absolute bottom-2 left-3 z-[500] rounded-md bg-white/90 px-2 py-1 text-[9px] text-slate-500 shadow-sm">
-          {visibleMapProjects.length} projects • <span className="text-rose-600">{stats.high} high</span> • <span className="text-amber-600">{stats.medium} medium</span> • <span className="text-emerald-600">{stats.low} low</span>
+        <div className="absolute bottom-2 left-3 z-[500] rounded-xl bg-white/90 px-2 py-1 text-[9px] text-slate-500 shadow-sm">
+          {projects.length} projects • <span className="text-rose-600">{stats.high} high</span> • <span className="text-amber-600">{stats.medium} medium</span> • <span className="text-emerald-600">{stats.low} low</span>
         </div>
       </div>
 
       <div className="flex items-center justify-between gap-2 border-t border-slate-200 px-4 py-1.5 text-[9px] text-slate-500">
         <span>Click a project marker or parcel to inspect acquisition risk.</span>
-        <span>{selectedProject && hasValidCoordinates(selectedProject) ? 'Dataset coordinate' : 'Fallback coordinate'} • Demo parcel geometry</span>
+        <span>{selectedProject && hasValidCoordinates(selectedProject) ? 'Dataset coordinate' : 'Prototype fallback coordinate'} • Prototype parcel geometry</span>
       </div>
     </section>
   );
