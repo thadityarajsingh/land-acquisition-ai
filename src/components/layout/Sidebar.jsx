@@ -84,30 +84,30 @@ export function Sidebar({
   const officerDistrict = currentUser?.district || "Mulshi Sub-Division, Pune";
 
   const panelContent = (
-    <div className="flex flex-col h-full bg-[#080D1A] text-slate-300 select-none">
-      <div className="px-4 py-3.5 border-b border-slate-800/80 flex items-center justify-between gap-2 shrink-0 bg-slate-900/50">
+    <div className="flex flex-col h-full bg-white text-slate-600 select-none">
+      <div className="px-4 py-3.5 border-b border-slate-200 flex items-center justify-between gap-2 shrink-0 bg-white">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-[#1E3A8A] flex items-center justify-center text-white text-xs font-black shadow-sm">
             <span className="text-[#F97316]">B</span>
           </div>
           <div>
-            <div className="text-xs font-bold text-white tracking-tight flex items-center gap-1.5"><span>Statutory Modules</span></div>
+            <div className="text-xs font-bold text-slate-900 tracking-tight flex items-center gap-1.5"><span>Statutory Modules</span></div>
             <div className="text-[10px] text-slate-400 font-medium">BhoomiIQ Navigation</div>
           </div>
         </div>
         {onClose && (
-          <button type="button" onClick={onClose} className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 text-slate-400 hover:text-white transition cursor-pointer" title="Close Modules (Esc)">
+          <button type="button" onClick={onClose} className="p-1.5 rounded-lg bg-slate-50 hover:bg-orange-50 border border-slate-200 text-slate-500 hover:text-[#EA580C] transition cursor-pointer" title="Close Modules (Esc)">
             <X className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      <div className="px-4 py-3 border-b border-slate-800/60 bg-slate-950/40 space-y-1.5 shrink-0">
+      <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 space-y-1.5 shrink-0">
         <div className="flex items-center gap-2 text-slate-400">
           <Building2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
           <div className="truncate flex-1">
             <div className="text-[9px] uppercase font-bold tracking-wider text-slate-500 leading-none">Authority / Division</div>
-            <div className="text-xs font-semibold text-slate-200 truncate mt-0.5">{officerDistrict}</div>
+            <div className="text-xs font-semibold text-slate-800 truncate mt-0.5">{officerDistrict}</div>
           </div>
         </div>
         <div className="text-[10px] text-slate-400 flex items-center justify-between pt-1 border-t border-slate-900">
@@ -122,11 +122,11 @@ export function Sidebar({
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
-            <button key={item.id} onClick={() => handleSelectTab(item.id)} className={`w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-all duration-150 group cursor-pointer ${isActive ? 'bg-blue-950/80 text-white border-l-4 border-[#F97316] shadow-md shadow-blue-950/50' : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/70 border-l-4 border-transparent'}`}>
-              <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 transition ${isActive ? 'bg-[#F97316]/20 text-[#F97316]' : 'bg-slate-800/60 text-slate-400 group-hover:text-slate-200 group-hover:bg-slate-800'}`}><Icon className="w-4 h-4" /></div>
+            <button key={item.id} onClick={() => handleSelectTab(item.id)} className={`w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-all duration-150 group cursor-pointer ${isActive ? 'bg-orange-50 text-slate-900 border-l-4 border-[#F97316] shadow-sm shadow-orange-100' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-l-4 border-transparent'}`}>
+              <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 transition ${isActive ? 'bg-[#F97316]/20 text-[#F97316]' : 'bg-slate-100 text-slate-500 group-hover:text-[#EA580C] group-hover:bg-orange-50'}`}><Icon className="w-4 h-4" /></div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1.5">
-                  <span className={`text-xs font-semibold truncate ${isActive ? 'text-white' : 'text-slate-200 group-hover:text-white'}`}>{item.label}</span>
+                  <span className={`text-xs font-semibold truncate ${isActive ? 'text-white' : 'text-slate-800 group-hover:text-slate-900'}`}>{item.label}</span>
                   {item.badge && <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-semibold border shrink-0 ${item.badgeColor}`}>{item.badge}</span>}
                   {item.count && <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-semibold border shrink-0 ${item.countColor}`}>{item.count}</span>}
                 </div>
@@ -137,13 +137,13 @@ export function Sidebar({
         })}
       </nav>
 
-      <div className="p-3 m-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2 shrink-0 shadow-sm">
+      <div className="p-3 m-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2 shrink-0 shadow-sm">
         <div className="flex items-center justify-between text-xs"><span className="text-slate-400 font-medium">JMS Acquisition:</span><span className="font-mono font-bold text-amber-400">58% Completed</span></div>
-        <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden"><div className="bg-gradient-to-r from-orange-500 to-[#F97316] h-full rounded-full transition-all duration-500" style={{ width: '58%' }} /></div>
+        <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div className="bg-gradient-to-r from-orange-500 to-[#F97316] h-full rounded-full transition-all duration-500" style={{ width: '58%' }} /></div>
         <div className="flex justify-between items-center text-[10px] text-slate-400 pt-0.5"><span>Section 20(E) Deadline</span><span className="text-slate-200 font-mono font-semibold">28-Oct-2024</span></div>
       </div>
 
-      <div className="px-4 py-2.5 border-t border-slate-800/80 bg-slate-950/60 flex items-center justify-between text-[10px] text-slate-500 shrink-0">
+      <div className="px-4 py-2.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-[10px] text-slate-500 shrink-0">
         <div className="flex items-center gap-1.5 text-slate-400"><Shield className="w-3.5 h-3.5 text-emerald-400 shrink-0" /><span>NIC RFCTLARR v2.4</span></div>
         <span className="text-slate-500">SSO Valid</span>
       </div>
