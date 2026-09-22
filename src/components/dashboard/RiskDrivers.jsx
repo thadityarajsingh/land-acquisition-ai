@@ -9,18 +9,18 @@ export function RiskDrivers({ drivers = [] }) {
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Explainable AI (SHAP)
+            AI EXPLANATION
           </span>
           <h2 className="text-sm font-bold text-slate-800">
-            Primary Delay Drivers
+            Why is the risk changing?
           </h2>
         </div>
         <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-mono font-medium">
-          SHAP Contribution • Log-Odds
+          Impact on Delay Risk
         </span>
       </div>
 
-      <div className="space-y-3 pt-3">
+      <div className="space-y-3 pt-4">
         {drivers.map((driver, idx) => {
           const isUp = driver.direction === 'up' || driver.impact > 0;
           const barPct = Math.min(100, Math.round((Math.abs(driver.impact) / maxImpact) * 100));
@@ -37,7 +37,7 @@ export function RiskDrivers({ drivers = [] }) {
                       {driver.name}
                     </div>
                     <div className="text-[10px] text-slate-400 font-medium">
-                      {driver.category}
+                      Project Factor
                     </div>
                   </div>
                 </div>
