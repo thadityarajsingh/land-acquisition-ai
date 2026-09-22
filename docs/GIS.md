@@ -22,9 +22,9 @@ The GIS map dynamically loads:
 
 ## GIS dataset
 
-The map loads `/gis-demo.csv` from the frontend public assets. Records are filtered to coordinates inside the approximate geographic bounds of India.
+The map loads `/gis-demo.csv` from the frontend public assets and builds an in-memory district index. Coordinates are filtered to an India bounding box before they can be used.
 
-When a GIS record matches a backend project, its risk information is enriched from the backend project record.
+Backend project records are joined to the GIS dataset by normalized state + district + project type, then by normalized state + district. This prevents synthetic backend coordinates from relocating a project to an unrelated place.
 
 Matching priority:
 
@@ -57,13 +57,13 @@ When a selected project has a simulated score, the GIS layer uses that score for
 
 ## Parcel geometry
 
-Where official parcel geometry is not supplied, the component creates small prototype polygon shapes around the selected project center. These shapes are for demonstration only.
+The map no longer invents parcel polygons when geometry is absent. Cadastral records can still be shown in the register, but polygon rendering requires actual parcel geometry from the backend.
 
 The cadastral register explicitly identifies demo geometry when official cadastral parcel boundaries are unavailable.
 
 ## Search and interaction
 
-The GIS map can filter visible records using project ID, backend project ID, district, state, and project type. Clicking a project marker selects the corresponding backend project.
+The GIS map clusters project markers, keeps the map constrained to the India region, fits the initial view to the project set, and lets users locate the selected project. Clicking a project marker selects the corresponding backend project.
 
 ## Data quality requirements for a real deployment
 
