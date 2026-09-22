@@ -10,37 +10,18 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
       ? `${Math.round((Number(score) / 100) * 180)} model-estimated days`
       : '—'
   );
-  const readableDelay = displayedDelay.replace(' model-estimated', '');
 
   const radius = 58;
   const circumference = 2 * Math.PI * radius;
   const safeScore = Math.max(0, Math.min(100, Number(score) || 0));
   const strokeDashoffset = circumference - (safeScore / 100) * circumference;
 
-  const recommendation = safeScore >= 70
-    ? {
-        title: 'Immediate Attention',
-        description: 'Risk is currently high. Prioritize mitigation actions and close the main risk drivers.',
-        iconClass: 'text-rose-500',
-      }
-    : safeScore >= 40
-      ? {
-          title: 'Monitor & Review',
-          description: 'Risk is currently medium. Review the main risk drivers and apply preventive actions.',
-          iconClass: 'text-amber-500',
-        }
-      : {
-          title: 'No Immediate Action',
-          description: 'Risk is currently low. Continue normal monitoring.',
-          iconClass: 'text-emerald-500',
-        };
-
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] p-5 hover:shadow-md transition-all duration-300">
+    <div className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_8px_30px_rgba(15,23,42,0.04)] p-6 hover:shadow-md transition-all duration-300">
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Delay Risk
+            AI Risk Assessment
           </span>
           <h2 className="text-sm font-bold text-slate-800">
             Land Acquisition Delay Risk
@@ -95,7 +76,8 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
           </div>
 
           <div className="text-center mt-1">
-            <div className="text-[10px] text-slate-400 font-medium">Lower score = lower chance of delay</div>
+            <div className="text-[10px] text-slate-400 font-medium">Prediction based on</div>
+            <div className="text-xs font-bold text-slate-700 font-mono">ML risk model</div>
           </div>
         </div>
 
@@ -107,36 +89,30 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
                 Estimated Delay
               </span>
               <span className="font-bold text-rose-600 font-mono text-xs">
-                {readableDelay}
+                {displayedDelay}
               </span>
             </div>
             <p className="text-[10px] text-slate-500 leading-tight">
-              Expected delay based on current project data.
+              Expected delay based on the current project risk assessment.
             </p>
           </div>
 
           <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/60 hover:bg-slate-50 transition-colors">
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-slate-500 flex items-center gap-1.5 text-[11px] font-medium">
-                <AlertOctagon className={`w-3.5 h-3.5 ${recommendation.iconClass}`} />
+                <AlertOctagon className="w-3.5 h-3.5 text-emerald-500" />
                 AI Recommendation
               </span>
-              <span className="font-bold text-slate-800 text-xs">{recommendation.title}</span>
+              <span className="font-bold text-slate-800 text-xs">No Immediate Action</span>
             </div>
             <p className="text-[10px] text-slate-500 leading-tight">
-              {recommendation.description}
+              Risk is currently low. Continue normal monitoring.
             </p>
           </div>
 
-          <div className="space-y-1 px-1 text-[10px] text-slate-400">
-            <div>
-              <span className="font-medium text-slate-600">How was this calculated?</span>
-              <p className="mt-0.5 leading-tight">AI model analyzes approval delays, legal issues, past project performance and other project factors.</p>
-            </div>
-            <div className="flex items-center justify-between gap-2 pt-1">
-              <span>High Risk starts at <strong className="text-slate-600">70 / 100</strong></span>
-              <span>Current Score: <strong className="text-slate-600">{safeScore} / 100</strong></span>
-            </div>
+          <div className="flex items-center justify-between px-1 text-[10px] text-slate-400">
+            <span>High Risk starts at <strong className="text-slate-600">70 pts</strong></span>
+            <span className="text-emerald-600 font-medium">Low Risk: &lt;40 pts</span>
           </div>
         </div>
       </div>

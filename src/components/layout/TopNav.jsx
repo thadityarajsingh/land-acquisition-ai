@@ -101,7 +101,7 @@ export function TopNav({
   const officerDistrict = currentUser?.district || "Pune West Arc Division";
 
   return (
-    <header className="bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#C2410C] border-b border-orange-700/60 text-white sticky top-0 z-40 px-4 sm:px-6 py-2.5 shadow-md shadow-orange-950/15 backdrop-blur-md">
+    <header className="bg-white/95 border-b border-slate-200 text-slate-900 sticky top-0 z-40 px-4 sm:px-6 py-3 shadow-[0_1px_10px_rgba(15,23,42,0.05)] backdrop-blur-xl">
       <div className="max-w-[1720px] mx-auto flex items-center justify-between gap-4">
         
         {/* Brand & Gov Identity with Sidebar Toggle */}
@@ -112,8 +112,8 @@ export function TopNav({
               onClick={onToggleSidebar}
               className={`p-1.5 rounded-lg border transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
                 isSidebarOpen
-                  ? 'bg-white text-[#EA580C] border-white shadow-md font-bold'
-                  : 'bg-black/20 hover:bg-black/30 border-white/25 text-white'
+                  ? 'bg-orange-50 text-[#EA580C] border-orange-200 shadow-sm font-bold'
+                  : 'bg-white hover:bg-orange-50 border-slate-200 text-slate-700'
               }`}
               title={isSidebarOpen ? "Close Modules (Sliding Window)" : "Open Modules (Sliding Window)"}
             >
@@ -129,19 +129,19 @@ export function TopNav({
             className="flex items-center gap-2.5 text-left group cursor-pointer focus:outline-none select-none"
             title="Click to return to the top"
           >
-            <div className="w-8 h-8 rounded-lg bg-white border border-white/40 flex items-center justify-center text-[#EA580C] font-black tracking-wider shadow-sm group-hover:scale-105 group-active:scale-95 transition-transform">
+            <div className="w-9 h-9 rounded-xl bg-[#F97316] border border-orange-300 flex items-center justify-center text-white font-black tracking-wider shadow-sm group-hover:scale-105 group-active:scale-95 transition-transform">
               <span className="text-lg font-black">B</span>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-sm sm:text-base tracking-tight text-white drop-shadow-sm group-hover:text-amber-100 transition-colors">
-                  Bhoomi<span className="text-amber-100">IQ</span>
+                <span className="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 group-hover:text-[#EA580C] transition-colors">
+                  Bhoomi<span className="text-[#F97316]">IQ</span>
                 </span>
-                <span className="text-[9px] uppercase font-bold tracking-wider bg-white/20 text-white px-1.5 py-0.2 rounded border border-white/30 shadow-xs">
+                <span className="text-[9px] uppercase font-bold tracking-wider bg-orange-50 text-[#C2410C] px-1.5 py-0.2 rounded border border-orange-200 shadow-xs">
                   v2.4 Live
                 </span>
               </div>
-              <p className="text-[10px] text-orange-100 font-medium hidden sm:block leading-tight group-hover:text-white transition-colors">
+              <p className="text-[10px] text-slate-500 font-medium hidden sm:block leading-tight group-hover:text-slate-700 transition-colors">
                 National Land Acquisition Risk Intelligence
               </p>
             </div>
@@ -153,20 +153,20 @@ export function TopNav({
           <div className="relative flex-1">
             <label htmlFor="project-selector" className="sr-only">Select Infrastructure Corridor</label>
             <div className="relative">
-              <Layers className="w-3.5 h-3.5 text-orange-100 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Layers className="w-3.5 h-3.5 text-[#F97316] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <select
                 id="project-selector"
                 value={selectedProjectId}
                 onChange={(e) => onSelectProject(e.target.value)}
-                className="w-full bg-black/20 hover:bg-black/25 text-white text-xs pl-8 pr-8 py-1.5 rounded-lg border border-white/25 focus:outline-none focus:ring-2 focus:ring-white/40 font-medium appearance-none cursor-pointer transition shadow-inner"
+                className="w-full bg-white hover:bg-slate-50 text-slate-800 text-xs pl-8 pr-8 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-200 font-medium appearance-none cursor-pointer transition shadow-sm"
               >
                 {projects.map((p) => (
-                  <option key={p.id} value={p.id} className="bg-slate-900 text-white py-1">
+                  <option key={p.id} value={p.id} className="bg-white text-slate-900 py-1">
                     {p.id} — {p.name} ({p.district})
                   </option>
                 ))}
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-orange-100 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 
@@ -177,7 +177,7 @@ export function TopNav({
               value={searchQuery}
               onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
               placeholder="Search Gut / Owner..."
-              className="w-full bg-black/20 hover:bg-black/25 text-xs pl-8 pr-3 py-1.5 rounded-lg border border-white/25 text-white placeholder-orange-100/70 focus:outline-none focus:ring-2 focus:ring-white/40 shadow-inner"
+              className="w-full bg-white hover:bg-slate-50 text-xs pl-8 pr-3 py-2 rounded-xl border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-200 shadow-sm"
             />
           </div>
         </div>
@@ -190,12 +190,12 @@ export function TopNav({
             <button
               type="button"
               onClick={() => setShowCompliance(prev => !prev)}
-              className="hidden sm:flex items-center gap-1.5 bg-black/20 hover:bg-black/35 active:scale-95 px-2.5 py-1 rounded-lg border border-white/20 hover:border-white/40 text-xs transition cursor-pointer group"
+              className="hidden sm:flex items-center gap-1.5 bg-white hover:bg-orange-50 active:scale-95 px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-orange-200 text-xs transition cursor-pointer group shadow-sm"
               title="Click to view RFCTLARR Statutory Compliance Audit & Legal Status"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
-              <span className="text-white text-[11px] font-medium group-hover:text-amber-100 transition-colors">RFCTLARR Compliant</span>
-              <ChevronDown className={`w-3 h-3 text-orange-200 transition-transform duration-200 ${showCompliance ? 'rotate-180 text-white' : ''}`} />
+              <span className="text-slate-700 text-[11px] font-medium group-hover:text-[#C2410C] transition-colors">RFCTLARR Compliant</span>
+              <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${showCompliance ? 'rotate-180 text-white' : ''}`} />
             </button>
 
             {/* Compliance Modal / Popover */}
@@ -321,10 +321,10 @@ export function TopNav({
             <button
               type="button"
               onClick={() => setShowNotifications(prev => !prev)}
-              className="p-1.5 text-white hover:text-white bg-black/20 hover:bg-black/30 rounded-lg border border-white/25 transition relative cursor-pointer"
+              className="p-2 text-slate-500 hover:text-[#EA580C] bg-white hover:bg-orange-50 rounded-xl border border-slate-200 transition relative cursor-pointer shadow-sm"
               title="Statutory Alerts"
             >
-              <Bell className="w-4 h-4 text-white" />
+              <Bell className="w-4 h-4 text-slate-600" />
               <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-white rounded-full"></span>
             </button>
 
@@ -364,19 +364,19 @@ export function TopNav({
             <button
               type="button"
               onClick={() => setShowProfileMenu(prev => !prev)}
-              className="flex items-center gap-2 pl-2 border-l border-white/25 hover:opacity-95 transition group cursor-pointer focus:outline-none"
+              className="flex items-center gap-2 pl-3 border-l border-slate-200 hover:opacity-95 transition group cursor-pointer focus:outline-none"
               title="Officer Profile & Session Options"
             >
-              <div className="w-8 h-8 rounded-full bg-white text-[#EA580C] border border-white/50 text-xs flex items-center justify-center font-black shadow-sm group-hover:ring-2 group-hover:ring-white transition">
+              <div className="w-8 h-8 rounded-full bg-orange-50 text-[#EA580C] border border-orange-200 text-xs flex items-center justify-center font-black shadow-sm group-hover:ring-2 group-hover:ring-white transition">
                 {officerInitials}
               </div>
               <div className="hidden xl:block text-left">
-                <div className="text-xs font-bold text-white leading-tight">
+                <div className="text-xs font-bold text-slate-900 leading-tight">
                   {officerName}
                 </div>
-                <div className="text-[10px] text-orange-100 flex items-center gap-1">
+                <div className="text-[10px] text-slate-500 flex items-center gap-1">
                   <span>{officerRole}</span>
-                  <ChevronDown className={`w-2.5 h-2.5 transition-transform duration-200 text-orange-100 ${showProfileMenu ? 'rotate-180 text-white' : ''}`} />
+                  <ChevronDown className={`w-2.5 h-2.5 transition-transform duration-200 text-slate-400 ${showProfileMenu ? 'rotate-180 text-white' : ''}`} />
                 </div>
               </div>
             </button>
@@ -434,7 +434,7 @@ export function TopNav({
             <button
               type="button"
               onClick={onLogout}
-              className="p-1.5 text-white hover:text-white bg-black/20 hover:bg-red-600/40 rounded-lg border border-white/25 hover:border-red-400/40 transition cursor-pointer"
+              className="p-2 text-slate-500 hover:text-red-600 bg-white hover:bg-red-50 rounded-xl border border-slate-200 hover:border-red-200 transition cursor-pointer"
               title="Sign Out of BhoomiIQ"
             >
               <LogOut className="w-4 h-4" />
