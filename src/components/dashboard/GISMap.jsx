@@ -231,7 +231,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
   useEffect(() => {
     const map = mapInstance.current;
     const L = window.L;
-    if (!map || !L || !L.MarkerClusterGroup || !gisLoaded) return;
+    if (!map || !L || !L.MarkerClusterGroup) return;
 
     if (projectLayerRef.current) {
       projectLayerRef.current.clearLayers();
