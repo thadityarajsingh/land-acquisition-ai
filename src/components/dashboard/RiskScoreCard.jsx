@@ -17,14 +17,14 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
   const strokeDashoffset = circumference - (safeScore / 100) * circumference;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] p-5 hover:shadow-md transition-all duration-300">
+    <div className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_8px_30px_rgba(15,23,42,0.04)] p-6 hover:shadow-md transition-all duration-300">
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Delay Risk Probability
+            AI Risk Assessment
           </span>
           <h2 className="text-sm font-bold text-slate-800">
-            Composite Delay Index
+            Land Acquisition Delay Risk
           </h2>
         </div>
 
@@ -76,7 +76,7 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
           </div>
 
           <div className="text-center mt-1">
-            <div className="text-[10px] text-slate-400 font-medium">Prediction Source</div>
+            <div className="text-[10px] text-slate-400 font-medium">Prediction based on</div>
             <div className="text-xs font-bold text-slate-700 font-mono">ML risk model</div>
           </div>
         </div>
@@ -86,14 +86,14 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-slate-500 flex items-center gap-1.5 text-[11px] font-medium">
                 <Clock className="w-3.5 h-3.5 text-rose-500" />
-                Model-Estimated Delay
+                Estimated Delay
               </span>
               <span className="font-bold text-rose-600 font-mono text-xs">
                 {displayedDelay}
               </span>
             </div>
             <p className="text-[10px] text-slate-500 leading-tight">
-              Approximate model scenario horizon derived from the predicted risk probability (0–180 days).
+              Expected delay based on the current project risk assessment.
             </p>
           </div>
 
@@ -101,18 +101,18 @@ export function RiskScoreCard({ score = 82, projectData, simulationDelta = null,
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-slate-500 flex items-center gap-1.5 text-[11px] font-medium">
                 <AlertOctagon className="w-3.5 h-3.5 text-emerald-500" />
-                Decision Support Status
+                AI Recommendation
               </span>
-              <span className="font-bold text-slate-800 text-xs">Advisory</span>
+              <span className="font-bold text-slate-800 text-xs">No Immediate Action</span>
             </div>
             <p className="text-[10px] text-slate-500 leading-tight">
-              Use the risk score and SHAP drivers to prioritize review; this system does not make statutory or financial decisions.
+              Risk is currently low. Continue normal monitoring.
             </p>
           </div>
 
           <div className="flex items-center justify-between px-1 text-[10px] text-slate-400">
-            <span>Critical Threshold: <strong className="text-slate-600">70 pts</strong></span>
-            <span className="text-emerald-600 font-medium">De-risked: &lt;40 pts</span>
+            <span>High Risk starts at <strong className="text-slate-600">70 pts</strong></span>
+            <span className="text-emerald-600 font-medium">Low Risk: &lt;40 pts</span>
           </div>
         </div>
       </div>
