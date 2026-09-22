@@ -42,7 +42,7 @@ export function App() {
   const backendError = projectsError || predictionError;
 
   return (
-    <div className="h-screen overflow-hidden bg-[#F8FAFC] flex flex-col font-sans relative">
+    <div className="h-screen overflow-hidden bg-[#F6F8FB] flex flex-col font-sans relative">
       {/* Keep navigation in a top-level stacking context above every Leaflet layer/control. */}
       <div className="relative z-[10000] shrink-0">
         <TopNav projects={projects} selectedProjectId={selectedProjectId} onSelectProject={handleProjectSelect} searchQuery={searchQuery} onSearchChange={setSearchQuery} currentUser={currentUser} onLogout={handleLogout} onToggleSidebar={() => setIsSidebarOpen(prev => !prev)} isSidebarOpen={isSidebarOpen} onSelectTab={setActiveTab} onReturnToTop={() => { setActiveTab("cadastral"); document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' }); }} />
@@ -55,8 +55,8 @@ export function App() {
 
       {/* No z-index/isolation here: Leaflet remains contained by the map section, while navigation overlays remain top-level. */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
-        <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F8FAFC]">
-          <div className="max-w-[1600px] mx-auto space-y-5">
+        <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F6F8FB]">
+          <div className="max-w-[1720px] mx-auto space-y-6">
             {isLoading ? <DashboardSkeleton /> : backendError ? (
               <section className="rounded-2xl border border-rose-200 bg-white p-8 shadow-sm">
                 <h2 className="text-lg font-bold text-slate-900">Backend connection required</h2>
