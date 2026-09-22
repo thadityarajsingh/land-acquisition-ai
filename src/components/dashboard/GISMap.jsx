@@ -156,8 +156,10 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const projectLayerRef = useRef(null);
+  const parcelLayerRef = useRef(null);
   const [gisIndex, setGisIndex] = useState({ exact: new Map(), district: new Map() });
   const [gisLoaded, setGisLoaded] = useState(false);
+  const [cadastralData, setCadastralData] = useState(null);
   const [showProjects, setShowProjects] = useState(true);
   const [showParcels, setShowParcels] = useState(true);
 
@@ -172,6 +174,22 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
   );
   const selectedCenter = selectedResolved?.coordinate || [22.97, 78.66];
   const selectedScore = selectedProject ? riskScore(selectedProject, selectedProjectId, selectedRisk) : 0;
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/cadastral.geojson')
+      .then(response => {
+        if (!response.ok) throw new Error('No cadastral GeoJSON');
+        return response.json();
+      })
+      .then(data => {
+        if (!cancelled && data?.type === 'FeatureCollection') setCadastralData(data);
+      })
+      .catch(() => {
+        if (!cancelled) setCadastralData(null);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -290,6 +308,49 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
 
   useEffect(() => {
     const map = mapInstance.current;
+    const L = window.L;
+    if (!map || !L) return;
+
+    if (parcelLayerRef.current) {
+      map.removeLayer(parcelLayerRef.current);
+      parcelLayerRef.current = null;
+    }
+    if (!showParcels || !cadastralData?.features?.length) return;
+
+    const selectedId = selectedProject?.project_id ?? selectedProject?.id;
+    const layer = L.geoJSON(cadastralData, {
+      style: feature => {
+        const featureId = feature?.properties?.project_id ?? feature?.properties?.projectId;
+        const selected = selectedId != null && String(featureId) === String(selectedId);
+        return {
+          color: selected ? '#2563eb' : '#10b981',
+          weight: selected ? 3 : 1.5,
+          fillColor: selected ? '#3b82f6' : '#34d399',
+          fillOpacity: selected ? 0.22 : 0.10,
+        };
+      },
+      onEachFeature: (feature, layerFeature) => {
+        const p = feature?.properties || {};
+        const featureId = p.project_id ?? p.projectId;
+        layerFeature.bindPopup(
+          '<b>Parcel</b><br/>' +
+          `Project: ${featureId ?? '—'}<br/>` +
+          `Parcel: ${p.gutNo ?? p.parcel_id ?? p.parcelId ?? '—'}`,
+        );
+        if (featureId != null) {
+          layerFeature.on('click', () => onSelectProject?.(featureId));
+        }
+      },
+    }).addTo(map);
+
+    parcelLayerRef.current = layer;
+    return () => {
+      if (parcelLayerRef.current === layer && map.hasLayer(layer)) map.removeLayer(layer);
+    };
+  }, [cadastralData, selectedProject, showParcels, onSelectProject]);
+
+  useEffect(() => {
+    const map = mapInstance.current;
     if (!map || !selectedProject || !selectedResolved) return;
     map.setView(selectedResolved.coordinate, 13, { animate: true });
   }, [selectedProject, selectedResolved]);
@@ -307,7 +368,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
 
   const hasSimulation = Number.isFinite(Number(selectedRisk)) && Number.isFinite(Number(baselineRisk));
   const parcelCount = parcels.length;
-  const parcelGeometryAvailable = parcels.some(parcel => parcel?.geometry || parcel?.coordinates || parcel?.polygon);
+  const parcelGeometryAvailable = Boolean(cadastralData?.features?.length);
 
   return (
     <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
@@ -354,13 +415,13 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
 
       {showParcels && parcelCount > 0 && !parcelGeometryAvailable && (
         <div className="border-t border-amber-100 bg-amber-50/70 px-4 py-2 text-[10px] text-amber-800">
-          {parcelCount} cadastral records are available, but no parcel boundary geometry was supplied. The GIS intentionally does not invent polygon boundaries.
+          {parcelCount} cadastral records are available, but no cadastral GeoJSON was supplied. The GIS intentionally does not invent polygon boundaries.
         </div>
       )}
 
       <div className="flex items-center justify-between gap-2 border-t border-slate-200 px-4 py-1.5 text-[9px] text-slate-500">
         <span>Markers use the GIS district reference first, so synthetic backend coordinates cannot move a project to another part of India.</span>
-        <span>{selectedResolved?.source || 'GIS reference pending'}</span>
+        <span>{selectedResolved?.source || 'GIS reference pending'} • {cadastralData?.features?.length || 0} mapped parcels</span>
       </div>
     </section>
   );
