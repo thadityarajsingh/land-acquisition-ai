@@ -28,16 +28,16 @@ Backend project records are joined to the GIS dataset by normalized state + dist
 
 Matching priority:
 
-1. state + normalized district
-2. state + project type
+1. state + normalized district + project type
+2. state + normalized district
 
 District normalization removes spaces/non-alphanumeric characters and trailing `urban`/`rural` suffixes.
 
 ## Coordinates
 
-If a project has valid latitude/longitude values, the map uses them directly.
+The GIS reference dataset is preferred when a state/district match exists. Backend latitude/longitude is used only when it is valid, non-synthetic, and no GIS district match exists.
 
-If coordinates are missing or invalid, the component uses a state-level reference center. These fallback centers are visualization aids and are **not cadastral boundaries or surveyed coordinates**.
+If coordinates are missing, synthetic, or invalid, the component uses a state-level reference center. These fallback centers are visualization aids and are **not cadastral boundaries or surveyed coordinates**.
 
 ## Project markers
 
