@@ -53,3 +53,4 @@ GIS-0051,West Bengal,Kolkata,Irrigation,26.0,8,Partially Paid,35,0,Full,27.8,58.
 GIS-0052,West Bengal,Siliguri,Power,15.9,9,Partially Paid,13,0,Partial,87.3,71.3,59.0,Partially Complete,Pending,3,Rehabilitation,1,0,0,synthetic_demo_district_reference,26.7271,88.3953,district_reference
 GIS-0053,Uttar Pradesh,Mathura,Land Acquisition Pilot,50.0,0,,0,0,,0,0,0,,,0,Planning,0,0,0,official_up_geodashboard_reference,27.4924,77.6737,district_reference
 GIS-0054,Karnataka,Bengaluru Urban,Highway,53.8,0,,0,0,,0,0,0,,,0,Planning,0,0,0,public_district_reference,12.9700,77.5600,district_reference
+GIS-0055,Bihar,Nalanda,Highway,23.7,19,Public reference,0,0,Public district headquarters reference,0,0,0,Reference,Reference,0,Planning,0,0,0,public_district_headquarters_reference,25.2008,85.5239,district_reference
