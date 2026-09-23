@@ -130,34 +130,6 @@ async function ensureLeaflet() {
   });
 }
 
-async function ensureClusterAssets() {
-  const addCss = (href, id) => {
-    if (document.getElementById(id)) return;
-    const link = document.createElement('link');
-    link.id = id;
-    link.rel = 'stylesheet';
-    link.href = href;
-    document.head.appendChild(link);
-  };
-  addCss('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css', 'leaflet-markercluster-css');
-  addCss('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css', 'leaflet-markercluster-default-css');
-  if (window.L?.MarkerClusterGroup) return;
-  await new Promise((resolve, reject) => {
-    const existing = document.getElementById('leaflet-markercluster-js');
-    if (existing) {
-      existing.addEventListener('load', resolve, { once: true });
-      existing.addEventListener('error', reject, { once: true });
-      return;
-    }
-    const script = document.createElement('script');
-    script.id = 'leaflet-markercluster-js';
-    script.src = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js';
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-}
-
 export function GISMap({ projects = [], selectedProjectId, onSelectProject, selectedRisk, baselineRisk, parcels = [] }) {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
@@ -225,7 +197,6 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     (async () => {
       try {
         await ensureLeaflet();
-        await ensureClusterAssets();
         if (cancelled || !mapRef.current || mapInstance.current) return;
         const L = window.L;
         const map = L.map(mapRef.current, {
@@ -259,7 +230,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
   useEffect(() => {
     const map = mapInstance.current;
     const L = window.L;
-    if (!map || !L || !L.MarkerClusterGroup) return;
+    if (!map || !L) return;
 
     if (projectLayerRef.current) {
       projectLayerRef.current.clearLayers();
@@ -268,15 +239,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     }
     if (!showProjects || !projects.length) return;
 
-    const layer = L.markerClusterGroup({
-      chunkedLoading: true,
-      showCoverageOnHover: false,
-      maxClusterRadius: 42,
-      disableClusteringAtZoom: 10,
-      spiderfyOnMaxZoom: true,
-      zoomToBoundsOnClick: true,
-    });
-
+    const layer = L.layerGroup();
     let selectedMarker = null;
 
     projects.forEach(project => {
@@ -297,14 +260,10 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
 
       marker.bindPopup(`
         <div style="min-width:220px;font-family:Arial,sans-serif;font-size:13px;line-height:1.55">
-          <div style="font-size:15px;font-weight:700;margin-bottom:8px">${escapeHtml(id ?? 'Project')}</div>
           <div><b>Location:</b> ${escapeHtml(project.district)}, ${escapeHtml(project.state)}</div>
           <div><b>Risk:</b> <span style="color:${color};font-weight:700">${score.toFixed(0)}/100 • ${escapeHtml(riskLevel(score))}</span></div>
-          <div><b>Area:</b> ${escapeHtml(project.land_area_acres)} acres</div>
+          <div><b>Land area:</b> ${escapeHtml(project.land_area_acres)} acres</div>
           <div><b>Affected families:</b> ${escapeHtml(project.affected_families)}</div>
-          <div><b>Acquisition stage:</b> ${escapeHtml(project.acquisition_stage)}</div>
-          <div><b>Approval delay:</b> ${escapeHtml(project.approval_delay_days)} days</div>
-          <div><b>Historical delays:</b> ${escapeHtml(project.historical_delays)}</div>
           <div><b>Coordinate source:</b> ${escapeHtml(resolved.source)}</div>
           <div><b>Coordinates:</b> ${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
         </div>
