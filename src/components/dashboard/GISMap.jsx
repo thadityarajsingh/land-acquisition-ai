@@ -260,6 +260,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
 
       marker.bindPopup(`
         <div style="min-width:220px;font-family:Arial,sans-serif;font-size:13px;line-height:1.55">
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px">${escapeHtml(id ?? 'Project')}</div>
           <div><b>Location:</b> ${escapeHtml(project.district)}, ${escapeHtml(project.state)}</div>
           <div><b>Risk:</b> <span style="color:${color};font-weight:700">${score.toFixed(0)}/100 • ${escapeHtml(riskLevel(score))}</span></div>
           <div><b>Land area:</b> ${escapeHtml(project.land_area_acres)} acres</div>
