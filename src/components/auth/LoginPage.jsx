@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import {
   Shield,
   Eye,
@@ -68,7 +68,7 @@ export const PRESET_ACCOUNTS = [
     roleTitle: "State Vigilance & Quality Auditor",
     name: "Vikramjit Roy, IA&AS",
     designation: "Principal Director of Audit (Infrastructure)",
-    district: "Ministry of Road Transport & Highways",
+    district: "BhoomiIQ prototype",
     email: "auditor.kala@nic.in",
     avatarInitials: "VR",
     avatarBg: "bg-amber-600",
@@ -139,36 +139,25 @@ export function LoginPage({ onLogin }) {
 
     setLoading(false);
 
-    if (matchedAccount) {
-      onLogin({
-        id: matchedAccount.id,
-        name: matchedAccount.name,
-        email: matchedAccount.email,
-        role: matchedAccount.role,
-        roleTitle: matchedAccount.roleTitle,
-        designation: matchedAccount.designation,
-        district: matchedAccount.district,
-        avatarInitials: matchedAccount.avatarInitials,
-        avatarBg: matchedAccount.avatarBg,
-        badgeColor: matchedAccount.badgeColor,
-        loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      });
-    } else {
-      const initials = officerId.substring(0, 2).toUpperCase();
-      onLogin({
-        id: officerId.toUpperCase(),
-        name: `Officer ${officerId.toUpperCase()}`,
-        email: officerId.includes("@") ? officerId : `${officerId.toLowerCase()}@nic.in`,
-        role: "lao",
-        roleTitle: "Land Acquisition Officer",
-        designation: "Authorized Revenue Official",
-        district: "Infrastructure Assessment Division",
-        avatarInitials: initials,
-        avatarBg: "bg-slate-700",
-        badgeColor: "bg-slate-500/15 text-slate-300 border-slate-500/30",
-        loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      });
+    if (!matchedAccount || password !== matchedAccount.defaultPassword) {
+      setError("Invalid demo credentials. Select a listed officer or use the displayed demo password.");
+      return;
     }
+
+    onLogin({
+      id: matchedAccount.id,
+      name: matchedAccount.name,
+      email: matchedAccount.email,
+      role: matchedAccount.role,
+      roleTitle: matchedAccount.roleTitle,
+      designation: matchedAccount.designation,
+      district: matchedAccount.district,
+      avatarInitials: matchedAccount.avatarInitials,
+      avatarBg: matchedAccount.avatarBg,
+      badgeColor: matchedAccount.badgeColor,
+      loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      rememberMe,
+    });
   };
 
   return (
@@ -211,13 +200,13 @@ export function LoginPage({ onLogin }) {
               <div className="mb-6">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-semibold tracking-wide uppercase mb-3">
                   <Fingerprint className="w-3 h-3" />
-                  NIC Single Sign-On (SSO)
+                  Demo Officer Sign-In
                 </div>
                 <h2 className="text-2xl font-bold text-white tracking-tight">
                   Officer Authentication
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  Enter your assigned NIC credentials or Government Officer ID to access corridor risk data.
+                  Use one of the listed demo officer accounts. This screen does not connect to a real NIC authentication service.
                 </p>
               </div>
 
@@ -306,7 +295,7 @@ export function LoginPage({ onLogin }) {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                       </svg>
-                      <span>Verifying with NIC Registry...</span>
+                      <span>Checking demo credentials...</span>
                     </>
                   ) : (
                     <>
@@ -319,7 +308,7 @@ export function LoginPage({ onLogin }) {
 
               <div className="mt-5 pt-4 border-t border-slate-800 text-[11px] text-slate-500 flex items-center gap-2">
                 <Shield className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span>Authorized Government of India Personnel Only. All session actions are logged to statutory audit.</span>
+                <span>Prototype authentication only. No government identity system or statutory audit service is connected.</span>
               </div>
             </div>
           </div>
@@ -335,7 +324,7 @@ export function LoginPage({ onLogin }) {
                   <span className="text-[10px] text-slate-500">1-Click Fast Access</span>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">
-                  Click any verified officer profile to populate credentials or sign in instantly:
+                  Select a demo officer to populate the credentials, then sign in:
                 </p>
               </div>
 
@@ -398,7 +387,7 @@ export function LoginPage({ onLogin }) {
               <div className="mt-4 pt-3 border-t border-slate-800/70 flex items-center justify-between text-[11px] text-slate-500">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  <span>NIC Gateway Online · 99.98% SLA</span>
+                  <span>Demo authentication · offline</span>
                 </div>
                 <span>v2.4 Live Build</span>
               </div>
@@ -412,9 +401,9 @@ export function LoginPage({ onLogin }) {
         <div className="flex items-center gap-2">
           <span>Ministry of Road Transport & Highways</span>
           <span>·</span>
-          <span>National Informatics Centre (NIC)</span>
+          <span>No government identity provider connected</span>
         </div>
-        <p>Protected under Information Technology Act, 2000 & RFCTLARR Act, 2013</p>
+        <p>Prototype UI — not an official government portal</p>
       </footer>
     </div>
   );
