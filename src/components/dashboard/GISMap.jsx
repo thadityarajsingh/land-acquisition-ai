@@ -313,13 +313,15 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     projectLayerRef.current = layer;
     map.addLayer(layer);
 
-    if (selectedMarker) selectedMarker.openPopup();
-
-    if (!selectedProject) {
+    if (selectedMarker && selectedProject && selectedResolved) {
+      const zoom = selectedResolved.source === 'State reference center' ? 7 : 13;
+      map.setView(selectedResolved.coordinate, zoom, { animate: false });
+      layer.zoomToShowLayer(selectedMarker, () => selectedMarker.openPopup());
+    } else if (!selectedProject) {
       const bounds = L.latLngBounds(projects.map(project => resolveCoordinate(project, gisIndex).coordinate));
       if (bounds.isValid()) map.fitBounds(bounds.pad(0.12), { maxZoom: 8, animate: false });
     }
-  }, [projects, selectedProject, selectedProjectId, selectedRisk, gisIndex, gisLoaded, showProjects, onSelectProject]);
+  }, [projects, selectedProject, selectedProjectId, selectedRisk, selectedResolved, gisIndex, gisLoaded, showProjects, onSelectProject]);
 
   useEffect(() => {
     const map = mapInstance.current;
@@ -364,12 +366,6 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     };
   }, [cadastralData, selectedProject, showParcels, onSelectProject]);
 
-  useEffect(() => {
-    const map = mapInstance.current;
-    if (!map || !selectedProject || !selectedResolved) return;
-    const zoom = selectedResolved.source === 'State reference center' ? 7 : 13;
-    map.setView(selectedResolved.coordinate, zoom, { animate: true });
-  }, [selectedProject, selectedResolved]);
 
   const stats = useMemo(() => {
     let high = 0; let medium = 0; let low = 0;
