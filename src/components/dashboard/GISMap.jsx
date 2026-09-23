@@ -169,6 +169,8 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
   const [cadastralData, setCadastralData] = useState(null);
   const [showProjects, setShowProjects] = useState(true);
   const [showParcels, setShowParcels] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
+  const selectedMarkerRef = useRef(null);
 
   const selectedProject = useMemo(
     () => projects.find(project => (project.project_id ?? project.id) === selectedProjectId),
@@ -242,6 +244,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
           maxZoom: 19,
         }).addTo(map);
         mapInstance.current = map;
+        setMapReady(true);
         setTimeout(() => map.invalidateSize(), 100);
       } catch (_) {}
     })();
@@ -249,6 +252,8 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     return () => {
       cancelled = true;
       projectLayerRef.current = null;
+      selectedMarkerRef.current = null;
+      setMapReady(false);
       if (mapInstance.current) {
         mapInstance.current.remove();
         mapInstance.current = null;
@@ -266,6 +271,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       map.removeLayer(projectLayerRef.current);
       projectLayerRef.current = null;
     }
+    selectedMarkerRef.current = null;
     if (!showProjects || !projects.length) return;
 
     const layer = L.markerClusterGroup({
@@ -301,6 +307,10 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
           <div><b>Location:</b> ${escapeHtml(project.district)}, ${escapeHtml(project.state)}</div>
           <div><b>Risk:</b> <span style="color:${color};font-weight:700">${score.toFixed(0)}/100 • ${escapeHtml(riskLevel(score))}</span></div>
           <div><b>Area:</b> ${escapeHtml(project.land_area_acres)} acres</div>
+          <div><b>Affected families:</b> ${escapeHtml(project.affected_families)}</div>
+          <div><b>Acquisition stage:</b> ${escapeHtml(project.acquisition_stage)}</div>
+          <div><b>Approval delay:</b> ${escapeHtml(project.approval_delay_days)} days</div>
+          <div><b>Historical delays:</b> ${escapeHtml(project.historical_delays)}</div>
           <div><b>Coordinate source:</b> ${escapeHtml(resolved.source)}</div>
           <div><b>Coordinates:</b> ${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
         </div>
@@ -311,15 +321,14 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     });
 
     projectLayerRef.current = layer;
+    selectedMarkerRef.current = selectedMarker;
     map.addLayer(layer);
-
-    if (selectedMarker) selectedMarker.openPopup();
 
     if (!selectedProject) {
       const bounds = L.latLngBounds(projects.map(project => resolveCoordinate(project, gisIndex).coordinate));
       if (bounds.isValid()) map.fitBounds(bounds.pad(0.12), { maxZoom: 8, animate: false });
     }
-  }, [projects, selectedProject, selectedProjectId, selectedResolved, gisIndex, gisLoaded, showProjects, onSelectProject]);
+  }, [projects, selectedProject, selectedProjectId, selectedResolved, gisIndex, gisLoaded, showProjects, onSelectProject, mapReady]);
 
   useEffect(() => {
     const map = mapInstance.current;
@@ -366,10 +375,25 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
 
   useEffect(() => {
     const map = mapInstance.current;
-    if (!map || !selectedProject || !selectedResolved) return;
+    if (!map || !mapReady || !selectedProject || !selectedResolved) return;
     const zoom = selectedResolved.source === 'State reference center' ? 7 : 13;
     map.setView(selectedResolved.coordinate, zoom, { animate: true });
-  }, [selectedProject, selectedResolved]);
+    const timer = window.setTimeout(() => {
+      const marker = selectedMarkerRef.current;
+      const layer = projectLayerRef.current;
+      if (!marker || !layer || !map.hasLayer(layer)) return;
+      try {
+        if (typeof layer.zoomToShowLayer === 'function' && !map.hasLayer(marker)) {
+          layer.zoomToShowLayer(marker, () => marker.openPopup());
+        } else {
+          marker.openPopup();
+        }
+      } catch (_) {
+        try { marker.openPopup(); } catch (_) {}
+      }
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [selectedProject, selectedResolved, mapReady]);
 
   const stats = useMemo(() => {
     let high = 0; let medium = 0; let low = 0;
