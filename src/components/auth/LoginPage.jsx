@@ -68,7 +68,7 @@ export const PRESET_ACCOUNTS = [
     roleTitle: "State Vigilance & Quality Auditor",
     name: "Vikramjit Roy, IA&AS",
     designation: "Principal Director of Audit (Infrastructure)",
-    district: "BhoomiIQ prototype",
+    district: "Prototype audit role",
     email: "auditor.kala@nic.in",
     avatarInitials: "VR",
     avatarBg: "bg-amber-600",
@@ -111,6 +111,7 @@ export function LoginPage({ onLogin }) {
       avatarBg: account.avatarBg,
       badgeColor: account.badgeColor,
       loginTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      rememberMe,
     });
   };
 
@@ -177,18 +178,18 @@ export function LoginPage({ onLogin }) {
                 Bhoomi<span className="text-[#F97316]">IQ</span>
               </span>
               <span className="text-[10px] uppercase font-bold tracking-wider bg-orange-500/15 text-[#F97316] px-2 py-0.5 rounded border border-orange-500/30">
-                GovTech Portal
+                Prototype
               </span>
             </div>
             <p className="text-[11px] text-slate-400 font-medium">
-              National Land Acquisition Statutory Intelligence Platform
+              Land acquisition risk intelligence prototype
             </p>
           </div>
         </div>
 
         <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800">
           <Shield className="w-3.5 h-3.5 text-emerald-400" />
-          <span>RFCTLARR Act 2013 & Section 20(E) Compliant</span>
+          <span>Prototype • model-assisted decision support</span>
         </div>
       </header>
 
@@ -299,7 +300,7 @@ export function LoginPage({ onLogin }) {
                     </>
                   ) : (
                     <>
-                      <span>Authenticate & Enter Corridor</span>
+                      <span>Sign in to prototype</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
