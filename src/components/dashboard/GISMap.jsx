@@ -16,6 +16,12 @@ const STATE_CENTERS = {
   'West Bengal': [23.68, 87.74],
 };
 
+function escapeHtml(value) {
+  return String(value ?? '—').replace(/[&<>"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[char]));
+}
+
 function validCoordinate(lat, lng) {
   return Number.isFinite(lat) && Number.isFinite(lng)
     && lat >= INDIA_BOUNDS.minLat && lat <= INDIA_BOUNDS.maxLat
@@ -159,6 +165,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
   const parcelLayerRef = useRef(null);
   const [gisIndex, setGisIndex] = useState({ exact: new Map(), district: new Map() });
   const [gisLoaded, setGisLoaded] = useState(false);
+  const [gisError, setGisError] = useState(null);
   const [cadastralData, setCadastralData] = useState(null);
   const [showProjects, setShowProjects] = useState(true);
   const [showParcels, setShowParcels] = useState(true);
@@ -173,7 +180,6 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     [selectedProject, gisIndex],
   );
   const selectedCenter = selectedResolved?.coordinate || [22.97, 78.66];
-  const selectedScore = selectedProject ? riskScore(selectedProject, selectedProjectId, selectedRisk) : 0;
 
   useEffect(() => {
     let cancelled = false;
@@ -202,10 +208,14 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
         if (!cancelled) {
           setGisIndex(buildGisIndex(parseCsv(text)));
           setGisLoaded(true);
+          setGisError(null);
         }
       })
-      .catch(() => {
-        if (!cancelled) setGisLoaded(false);
+      .catch((error) => {
+        if (!cancelled) {
+          setGisLoaded(false);
+          setGisError(error?.message || 'GIS reference data could not be loaded');
+        }
       });
     return () => { cancelled = true; };
   }, []);
@@ -285,11 +295,11 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
 
       marker.bindPopup(`
         <div style="min-width:220px;font-family:Arial,sans-serif;font-size:13px;line-height:1.55">
-          <div style="font-size:15px;font-weight:700;margin-bottom:8px">${id ?? 'Project'}</div>
-          <div><b>Location:</b> ${project.district ?? '—'}, ${project.state ?? '—'}</div>
-          <div><b>Risk:</b> <span style="color:${color};font-weight:700">${score.toFixed(0)}/100 • ${riskLevel(score)}</span></div>
-          <div><b>Area:</b> ${project.land_area_acres ?? '—'} acres</div>
-          <div><b>Coordinate source:</b> ${resolved.source}</div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px">${escapeHtml(id ?? 'Project')}</div>
+          <div><b>Location:</b> ${escapeHtml(project.district)}, ${escapeHtml(project.state)}</div>
+          <div><b>Risk:</b> <span style="color:${color};font-weight:700">${score.toFixed(0)}/100 • ${escapeHtml(riskLevel(score))}</span></div>
+          <div><b>Area:</b> ${escapeHtml(project.land_area_acres)} acres</div>
+          <div><b>Coordinate source:</b> ${escapeHtml(resolved.source)}</div>
           <div><b>Coordinates:</b> ${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
         </div>
       `);
@@ -352,7 +362,8 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
   useEffect(() => {
     const map = mapInstance.current;
     if (!map || !selectedProject || !selectedResolved) return;
-    map.setView(selectedResolved.coordinate, 13, { animate: true });
+    const zoom = selectedResolved.source === 'State reference center' ? 7 : 13;
+    map.setView(selectedResolved.coordinate, zoom, { animate: true });
   }, [selectedProject, selectedResolved]);
 
   const stats = useMemo(() => {
@@ -380,7 +391,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
               Land acquisition GIS
             </div>
             <p className="mt-0.5 text-[10px] text-slate-500">
-              {gisLoaded ? 'GIS reference coordinates loaded • district-aware placement' : 'Loading GIS reference coordinates…'}
+              {gisLoaded ? 'GIS reference coordinates loaded • district-aware placement' : gisError ? gisError : 'Loading GIS reference coordinates…'}
             </p>
           </div>
           <div className="flex items-center gap-2">
