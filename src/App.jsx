@@ -11,9 +11,16 @@ import { useWhatIf } from "./hooks/useWhatIf";
 import { useRecommendations } from "./hooks/useRecommendations";
 import { PanelLeft } from "lucide-react";
 
+const AUTH_STORAGE_KEY = "bhoomiiq_auth_session";
+
 export function App() {
   const [currentUser, setCurrentUser] = useState(() => {
-    try { const saved = localStorage.getItem("bhoomiiq_auth_session"); return saved ? JSON.parse(saved) : null; } catch { return null; }
+    try {
+      const saved = localStorage.getItem(AUTH_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("cadastral");
@@ -31,43 +38,114 @@ export function App() {
   const { recommendations, loading: recommendationsLoading } = useRecommendations(selectedProjectId);
   const { whatIfResult, simulating, runSimulation, resetSimulation } = useWhatIf(projectData);
 
-  React.useEffect(() => { try { localStorage.removeItem("bhoomiiq_sidebar_pinned"); } catch { /* ignore */ } }, []);
+  const handleLogin = (userData) => {
+    setCurrentUser(userData);
+    try {
+      if (userData?.rememberMe) {
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userData));
+      } else {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+      }
+    } catch (err) {
+      console.error("[BhoomiIQ] Unable to persist session:", err);
+    }
+  };
 
-  const handleLogin = (userData) => { setCurrentUser(userData); try { localStorage.setItem("bhoomiiq_auth_session", JSON.stringify(userData)); } catch (err) { console.error(err); } };
-  const handleLogout = () => { setCurrentUser(null); try { localStorage.removeItem("bhoomiiq_auth_session"); } catch (err) { console.error(err); } };
-  const handleProjectSelect = (id) => { setSelectedProjectId(id); resetSimulation(); };
+  const handleLogout = () => {
+    setCurrentUser(null);
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch (err) {
+      console.error("[BhoomiIQ] Unable to clear session:", err);
+    }
+  };
+
+  const handleProjectSelect = (id) => {
+    setSelectedProjectId(id);
+    resetSimulation();
+  };
 
   if (!currentUser) return <LoginPage onLogin={handleLogin} />;
+
   const isLoading = projectsLoading || predictionLoading || recommendationsLoading;
   const backendError = projectsError || predictionError;
 
   return (
     <div className="h-screen overflow-hidden bg-[#F6F8FB] flex flex-col font-sans relative">
-      {/* Keep navigation in a top-level stacking context above every Leaflet layer/control. */}
       <div className="relative z-[10000] shrink-0">
-        <TopNav projects={projects} selectedProjectId={selectedProjectId} onSelectProject={handleProjectSelect} searchQuery={searchQuery} onSearchChange={setSearchQuery} currentUser={currentUser} onLogout={handleLogout} onToggleSidebar={() => setIsSidebarOpen(prev => !prev)} isSidebarOpen={isSidebarOpen} onSelectTab={setActiveTab} onReturnToTop={() => { setActiveTab("cadastral"); document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+        <TopNav
+          projects={projects}
+          selectedProjectId={selectedProjectId}
+          onSelectProject={handleProjectSelect}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+          isSidebarOpen={isSidebarOpen}
+          onSelectTab={setActiveTab}
+          onReturnToTop={() => {
+            setActiveTab("cadastral");
+            document.querySelector("main")?.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
       </div>
 
-      {/* Keep the drawer outside the GIS content stacking context. */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} projectData={projectData} currentUser={currentUser} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        projectData={projectData}
+        currentUser={currentUser}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
 
-      {!isSidebarOpen && <button type="button" onClick={() => setIsSidebarOpen(true)} className="fixed left-0 top-1/2 -translate-y-1/2 bg-[#080D1A] hover:bg-slate-800 text-slate-400 hover:text-white border border-l-0 border-slate-700/80 px-1.5 py-3.5 rounded-r-xl shadow-xl z-[9000] transition-all duration-150 group flex flex-col items-center gap-1.5 cursor-pointer" title="Open Modules"><PanelLeft className="w-4 h-4 text-[#F97316]" /><span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 [writing-mode:vertical-rl] rotate-180">Modules</span></button>}
+      {!isSidebarOpen && (
+        <button
+          type="button"
+          onClick={() => setIsSidebarOpen(true)}
+          className="fixed left-0 top-1/2 -translate-y-1/2 bg-[#080D1A] hover:bg-slate-800 text-slate-400 hover:text-white border border-l-0 border-slate-700/80 px-1.5 py-3.5 rounded-r-xl shadow-xl z-[9000] transition-all duration-150 group flex flex-col items-center gap-1.5 cursor-pointer"
+          title="Open Modules"
+          aria-label="Open Modules"
+        >
+          <PanelLeft className="w-4 h-4 text-[#F97316]" />
+          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 [writing-mode:vertical-rl] rotate-180">Modules</span>
+        </button>
+      )}
 
-      {/* No z-index/isolation here: Leaflet remains contained by the map section, while navigation overlays remain top-level. */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
         <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F6F8FB]">
           <div className="max-w-[1720px] mx-auto space-y-6">
             {isLoading ? <DashboardSkeleton /> : backendError ? (
               <section className="rounded-2xl border border-rose-200 bg-white p-8 shadow-sm">
                 <h2 className="text-lg font-bold text-slate-900">Backend connection required</h2>
-                <p className="mt-2 text-sm text-slate-600">BhoomiIQ is configured to use the live FastAPI project and ML services. No mock project data is shown when the backend is unavailable.</p>
+                <p className="mt-2 text-sm text-slate-600">BhoomiIQ is configured to use the FastAPI project and ML services. No mock project data is shown when the backend is unavailable.</p>
                 <p className="mt-3 rounded-lg bg-rose-50 p-3 font-mono text-xs text-rose-700">{backendError}</p>
                 <p className="mt-3 text-xs text-slate-500">Start FastAPI on http://localhost:8000 and refresh this page.</p>
               </section>
             ) : (
               <>
-                <GISMap projects={projects} selectedProjectId={selectedProjectId} onSelectProject={handleProjectSelect} baselineRisk={prediction?.riskScore} selectedRisk={whatIfResult?.simulatedScore} parcels={projectData?.parcels || []} />
-                <Dashboard activeTab={activeTab} setActiveTab={setActiveTab} projectData={projectData} prediction={prediction} recommendations={recommendations} whatIfResult={whatIfResult} onRunSimulation={runSimulation} simulating={simulating} onResetSimulation={resetSimulation} searchQuery={searchQuery} currentUser={currentUser} />
+                <GISMap
+                  projects={projects}
+                  selectedProjectId={selectedProjectId}
+                  onSelectProject={handleProjectSelect}
+                  baselineRisk={prediction?.riskScore}
+                  selectedRisk={whatIfResult?.simulatedScore}
+                  parcels={projectData?.parcels || []}
+                />
+                <Dashboard
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  projectData={projectData}
+                  prediction={prediction}
+                  recommendations={recommendations}
+                  whatIfResult={whatIfResult}
+                  onRunSimulation={runSimulation}
+                  simulating={simulating}
+                  onResetSimulation={resetSimulation}
+                  searchQuery={searchQuery}
+                  currentUser={currentUser}
+                />
               </>
             )}
           </div>
