@@ -319,7 +319,7 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       const bounds = L.latLngBounds(projects.map(project => resolveCoordinate(project, gisIndex).coordinate));
       if (bounds.isValid()) map.fitBounds(bounds.pad(0.12), { maxZoom: 8, animate: false });
     }
-  }, [projects, selectedProject, selectedProjectId, selectedRisk, selectedResolved, gisIndex, gisLoaded, showProjects, onSelectProject]);
+  }, [projects, selectedProject, selectedProjectId, selectedResolved, gisIndex, gisLoaded, showProjects, onSelectProject]);
 
   useEffect(() => {
     const map = mapInstance.current;
