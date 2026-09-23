@@ -277,6 +277,8 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       zoomToBoundsOnClick: true,
     });
 
+    let selectedMarker = null;
+
     projects.forEach(project => {
       const id = project.project_id ?? project.id;
       const resolved = resolveCoordinate(project, gisIndex);
@@ -305,10 +307,13 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
       `);
       marker.on('click', () => onSelectProject?.(id));
       layer.addLayer(marker);
+      if (selected) selectedMarker = marker;
     });
 
     projectLayerRef.current = layer;
     map.addLayer(layer);
+
+    if (selectedMarker) selectedMarker.openPopup();
 
     if (!selectedProject) {
       const bounds = L.latLngBounds(projects.map(project => resolveCoordinate(project, gisIndex).coordinate));
