@@ -7,21 +7,31 @@ export function useRecommendations(projectId) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!projectId) return;
+    if (!projectId) {
+      setRecommendations([]);
+      setError(null);
+      return;
+    }
+
+    let cancelled = false;
 
     async function loadRecommendations() {
+      setLoading(true);
+      setError(null);
+      setRecommendations([]);
+
       try {
-        setLoading(true);
         const data = await fetchRecommendations(projectId);
-        setRecommendations(data);
+        if (!cancelled) setRecommendations(data);
       } catch (err) {
-        setError(err.message);
+        if (!cancelled) setError(err?.message || 'Failed to load recommendations');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     loadRecommendations();
+    return () => { cancelled = true; };
   }, [projectId]);
 
   return { recommendations, loading, error };
