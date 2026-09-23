@@ -316,7 +316,11 @@ export function GISMap({ projects = [], selectedProjectId, onSelectProject, sele
     if (selectedMarker && selectedProject && selectedResolved) {
       const zoom = selectedResolved.source === 'State reference center' ? 7 : 13;
       map.setView(selectedResolved.coordinate, zoom, { animate: false });
-      layer.zoomToShowLayer(selectedMarker, () => selectedMarker.openPopup());
+      if (typeof layer.zoomToShowLayer === 'function') {
+        layer.zoomToShowLayer(selectedMarker, () => selectedMarker.openPopup());
+      } else {
+        selectedMarker.openPopup();
+      }
     } else if (!selectedProject) {
       const bounds = L.latLngBounds(projects.map(project => resolveCoordinate(project, gisIndex).coordinate));
       if (bounds.isValid()) map.fitBounds(bounds.pad(0.12), { maxZoom: 8, animate: false });
