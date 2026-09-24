@@ -6,7 +6,7 @@ import axios from 'axios';
 const apiBaseUrl = import.meta.env.VITE_API_URL ||
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://127.0.0.1:8000'
-    : 'https://bhoomi-ai-backend-4zod.onrender.com');
+    : 'https://bhoomi-ai-backend-new.onrender.com');
 
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
