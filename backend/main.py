@@ -12,7 +12,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow the local React/Vite frontend and the deployed Render frontend.
+# Allow the local React/Vite frontend and the deployed Render frontends.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -20,6 +20,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "https://bhoomi-ai-frontend.onrender.com",
         "https://bhoomi-ai-frontend-new.onrender.com",
+        "https://land-acquisition-ai.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
